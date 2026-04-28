@@ -1,0 +1,32 @@
+.pio/build/esp32dev/libbd8/lvgl/font/font_manager/lv_font_manager.c.o: \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/lv_font_manager.c \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/lv_font_manager.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/lv_font.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../lv_conf_internal.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../lv_conf_kconfig.h \
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/dio_qspi/include/sdkconfig.h \
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_common/include/esp_attr.h \
+ .pio/libdeps/esp32dev/lvgl/../../lv_conf.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../misc/lv_types.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../misc/../lv_conf_internal.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/lv_symbol_def.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/lv_draw_buf.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_types.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_area.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/../lv_conf_internal.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_types.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_math.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_color.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_assert.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_log.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/../stdlib/lv_mem.h \
+ d:\documents\platformio\projects\art_shotgun_loadright\.pio\libdeps\esp32dev\lvgl\src\lv_conf_internal.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/../stdlib/lv_string.h \
+ d:\documents\platformio\projects\art_shotgun_loadright\.pio\libdeps\esp32dev\lvgl\src\misc\lv_types.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_palette.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_color.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../misc/lv_color_op.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../stdlib/lv_string.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/lv_image_dsc.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../draw/../lv_conf_internal.h \
+ .pio/libdeps/esp32dev/lvgl/src/font/font_manager/../../font/../misc/lv_area.h
