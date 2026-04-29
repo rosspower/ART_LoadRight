@@ -1,3 +1,6 @@
+https://github.com/me-no-dev/ESPAsyncWebServer.git
+tzapu/WiFiManager@^2.0.17
 https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
-bodmer/TFT_eSPI@^2.5.43
 lvgl/lvgl@^9.5.0
+bodmer/TFT_eSPI@^2.5.43
+suculent/ESP32httpUpdate@^2.1.145
