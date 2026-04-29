@@ -129,7 +129,7 @@ XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 
 
 // Measurement Declarations for Sensor
-int alarmEnabled = 1;
+//int alarmEnabled = 1;
 int rawPValue = 20; // Measurement from the sensor in mm
 int rawSValue = 20; // Measurement from the sensor in mm
 int minDist = 20;  // The closest reading to the sensor in mm: 100% full
@@ -147,9 +147,9 @@ int grainsAddedStart = 0;
 int grainsAddedFinish = 0;
 int alertPercentGrains = 0;
 int currentRndCount = 0;
-bool showMM = true;
-bool showShot = true;
-bool showCounter = true;
+// bool showMM = true;
+// bool showShot = true;
+// bool showCounter = true;
 
 
 
@@ -222,21 +222,22 @@ void setUiElementState(lv_obj_t * obj, bool state){
 
 void initDisplayValues(){
 
-  setSwitch(ui_EnableAlarmSwitch, alarmEnabled);
+  setSwitch(ui_EnableAlarmSwitch, savedsettings.alarmEnabled);
   // showmm
-  setSwitch(ui_showDistanceSwitch, showMM);
-  setUiElementState(ui_powderdistValueLabel, showMM);
-  setUiElementState(ui_shotDistValueLabel, showMM);
+  setSwitch(ui_showDistanceSwitch, savedsettings.showMM);
+  setUiElementState(ui_powderdistValueLabel, savedsettings.showMM);
+  setUiElementState(ui_shotDistValueLabel, savedsettings.showMM);
 
   //showShot
-  setSwitch(ui_showShotSwitch, showShot);
-  setUiElementState(ui_ShotIndicator, showShot);
-  setUiElementState(ui_ShotIndicator, showShot);
+  setSwitch(ui_showShotSwitch, savedsettings.showShot);
+  setUiElementState(ui_ShotIndicator, savedsettings.showShot);
+  setUiElementState(ui_ShotIndicator, savedsettings.showShot);
 
   //showCounter
-  setSwitch(ui_showCounterSwitch, showCounter);
-  setUiElementState(ui_CounterContainer, showCounter);
-  setUiElementState(ui_CounterContainer, showCounter);  
+  setSwitch(ui_showCounterSwitch, savedsettings.showCounter);
+  setUiElementState(ui_CounterContainer, savedsettings.showCounter);
+  setUiElementState(ui_CounterContainer, savedsettings.showCounter);
+  Serial.println(savedsettings.showMM);  
   
 
 
@@ -254,6 +255,17 @@ void initDisplayValues(){
    
 }
 
+
+
+extern "C" {
+    void ClearAllSettingsCallback(lv_event_t * e) {
+     clearAllPreferences();
+     initPreferences();
+     getPreferences();
+     initDisplayValues();
+    }
+}
+
 extern "C" {
     void resetCounterCallBack(lv_event_t * e) {
       reset_counter();
@@ -262,28 +274,32 @@ extern "C" {
 
 extern "C" {
     void toggleAlertCallBack(lv_event_t * e) {
-      alarmEnabled = lv_obj_has_state(ui_EnableAlarmSwitch, LV_STATE_CHECKED);
+      savedsettings.alarmEnabled = lv_obj_has_state(ui_EnableAlarmSwitch, LV_STATE_CHECKED);
+      storePreferences();
        
     }
 }
 
 extern "C" {
     void toggleShowDistanceCallBack(lv_event_t * e) {
-      showMM = lv_obj_has_state(ui_showDistanceSwitch, LV_STATE_CHECKED);
+      savedsettings.showMM = lv_obj_has_state(ui_showDistanceSwitch, LV_STATE_CHECKED);
+      storePreferences();
       initDisplayValues();
     }
 }
 
 extern "C" {
     void toggleShowShotCallBack(lv_event_t * e) {
-      showShot = lv_obj_has_state(ui_showShotSwitch, LV_STATE_CHECKED);
+      savedsettings.showShot = lv_obj_has_state(ui_showShotSwitch, LV_STATE_CHECKED);
+      storePreferences();
       initDisplayValues();
     }
 }
 
 extern "C" {
     void toggleShowCounterCallBack(lv_event_t * e) {
-      showCounter = lv_obj_has_state(ui_showCounterSwitch, LV_STATE_CHECKED);
+      savedsettings.showCounter = lv_obj_has_state(ui_showCounterSwitch, LV_STATE_CHECKED);
+      storePreferences();
       initDisplayValues();
     }
 }
@@ -293,11 +309,12 @@ extern "C" {
 void setup() {
   String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
-  clearAllPreferences();
+  
   delay(4000);
   initPreferences();
   getPreferences();
   Serial.println(savedsettings.device_name);
+  Serial.println(savedsettings.showMM);
   
   // Start LVGL
   lv_init();

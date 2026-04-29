@@ -17,6 +17,7 @@ void toggleAlertCallBack(lv_event_t * e);
 void toggleShowDistanceCallBack(lv_event_t * e);
 void toggleShowCounterCallBack(lv_event_t * e);
 void toggleShowShotCallBack(lv_event_t * e);
+void ClearAllSettingsCallback(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

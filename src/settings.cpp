@@ -81,19 +81,19 @@ void getPreferences(){
     savedsettings.mdns_name = prefs.getString("mdns_name", "smartLoader");
     savedsettings.alarmEnabled = prefs.getBool("alarmEnabled", true);
     
-    savedsettings.minPDist = prefs.putInt("minpDist", savedsettings.minPDist);
-    savedsettings.maxPDist = prefs.putInt("maxPDist", savedsettings.maxPDist);
-    savedsettings.minSDist = prefs.putInt("minpDist", savedsettings.minSDist);
-    savedsettings.maxSDist = prefs.putInt("maxSDist", savedsettings.maxSDist);
+    savedsettings.minPDist = prefs.getInt("minpDist", 5);
+    savedsettings.maxPDist = prefs.getInt("maxPDist", 100);
+    savedsettings.minSDist = prefs.getInt("minpDist", 5);
+    savedsettings.maxSDist = prefs.getInt("maxSDist", 100);
     
-    savedsettings.alertPPercent = prefs.putInt("alertPPercent", savedsettings.alertPPercent);
-    savedsettings.alertSPercent = prefs.putInt("alertSPercent", savedsettings.alertSPercent);
+    savedsettings.alertPPercent = prefs.getInt("alertPPercent", 20);
+    savedsettings.alertSPercent = prefs.getInt("alertSPercent", 20);
 
-    savedsettings.currentRndCount = prefs.putInt("currentRndCount", savedsettings.currentRndCount);
-    savedsettings.totalRndCnt = prefs.putInt("totalRndCnt", savedsettings.totalRndCnt);
+    savedsettings.currentRndCount = prefs.getInt("currentRndCount", 0);
+    savedsettings.totalRndCnt = prefs.getInt("totalRndCnt", 0);
             
-    savedsettings.showMM = prefs.putBool("showMM", true);
-    savedsettings.showShot = prefs.putBool("showShot", true);
-    savedsettings.showCounter = prefs.putBool("showCounter", true);
+    savedsettings.showMM = prefs.getBool("showMM", true);
+    savedsettings.showShot = prefs.getBool("showShot", true);
+    savedsettings.showCounter = prefs.getBool("showCounter", true);
     prefs.end();
 }

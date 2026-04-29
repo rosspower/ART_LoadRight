@@ -8,6 +8,7 @@
 lv_obj_t * ui_CalibratePowderScreen = NULL;
 lv_obj_t * ui_Menu_Button2 = NULL;
 lv_obj_t * ui_Label10 = NULL;
+lv_obj_t * ui_Container8 = NULL;
 // event funtions
 void ui_event_Menu_Button2(lv_event_t * e)
 {
@@ -62,6 +63,16 @@ void ui_CalibratePowderScreen_screen_init(void)
     lv_obj_set_style_outline_color(ui_Label10, lv_color_hex(0xF8F3F3), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_outline_opa(ui_Label10, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Container8 = lv_obj_create(ui_CalibratePowderScreen);
+    lv_obj_remove_style_all(ui_Container8);
+    lv_obj_set_width(ui_Container8, 180);
+    lv_obj_set_height(ui_Container8, 208);
+    lv_obj_set_align(ui_Container8, LV_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_Container8, LV_OBJ_FLAG_CLICKABLE);      /// Flags
+    lv_obj_set_scrollbar_mode(ui_Container8, LV_SCROLLBAR_MODE_ACTIVE);
+    lv_obj_set_scroll_dir(ui_Container8, LV_DIR_VER);
+    lv_obj_set_scroll_snap_x(ui_Container8, LV_SCROLL_SNAP_END);
+
     lv_obj_add_event_cb(ui_Menu_Button2, ui_event_Menu_Button2, LV_EVENT_ALL, NULL);
 
 }
@@ -74,5 +85,6 @@ void ui_CalibratePowderScreen_screen_destroy(void)
     ui_CalibratePowderScreen = NULL;
     ui_Menu_Button2 = NULL;
     ui_Label10 = NULL;
+    ui_Container8 = NULL;
 
 }

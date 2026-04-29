@@ -18,7 +18,8 @@ extern void ui_event_Return_Button(lv_event_t * e);
 extern lv_obj_t * ui_Return_Button;
 extern void ui_event_Label2(lv_event_t * e);
 extern lv_obj_t * ui_Label2;
-extern lv_obj_t * ui_Container1;
+extern lv_obj_t * ui_Label13;
+extern lv_obj_t * ui_Panel3;
 extern void ui_event_CalibratePowderScreenButton(lv_event_t * e);
 extern lv_obj_t * ui_CalibratePowderScreenButton;
 extern lv_obj_t * ui_Label1;
@@ -41,7 +42,9 @@ extern lv_obj_t * ui_Container7;
 extern lv_obj_t * ui_Label15;
 extern void ui_event_showShotSwitch(lv_event_t * e);
 extern lv_obj_t * ui_showShotSwitch;
-extern lv_obj_t * ui_Label13;
+extern void ui_event_ClearSettingsButton(lv_event_t * e);
+extern lv_obj_t * ui_ClearSettingsButton;
+extern lv_obj_t * ui_Label16;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus
