@@ -28,9 +28,9 @@ void initPreferences(){
         prefs.putString("mdns_name", "SmartLoader");
         prefs.putBool("alarmEnabled", true);
 
-        prefs.putInt("minpDist", 5);
+        prefs.putInt("minPDist", 5);
         prefs.putInt("maxPDist", 100);
-        prefs.putInt("minpDist", 5);
+        prefs.putInt("minSDist", 5);
         prefs.putInt("maxSDist", 100);
        
         prefs.putInt("alertPPercent", 20);
@@ -56,9 +56,9 @@ void storePreferences(){
 
     prefs.putBool("alarmEnabled", savedsettings.alarmEnabled);
     
-    prefs.putInt("minpDist", savedsettings.minPDist);
+    prefs.putInt("minPDist", savedsettings.minPDist);
     prefs.putInt("maxPDist", savedsettings.maxPDist);
-    prefs.putInt("minpDist", savedsettings.minSDist);
+    prefs.putInt("minSDist", savedsettings.minSDist);
     prefs.putInt("maxSDist", savedsettings.maxSDist);
     
     prefs.putInt("alertPPercent", savedsettings.alertPPercent);
@@ -81,9 +81,9 @@ void getPreferences(){
     savedsettings.mdns_name = prefs.getString("mdns_name", "smartLoader");
     savedsettings.alarmEnabled = prefs.getBool("alarmEnabled", true);
     
-    savedsettings.minPDist = prefs.getInt("minpDist", 5);
+    savedsettings.minPDist = prefs.getInt("minPDist", 5);
     savedsettings.maxPDist = prefs.getInt("maxPDist", 100);
-    savedsettings.minSDist = prefs.getInt("minpDist", 5);
+    savedsettings.minSDist = prefs.getInt("minSDist", 5);
     savedsettings.maxSDist = prefs.getInt("maxSDist", 100);
     
     savedsettings.alertPPercent = prefs.getInt("alertPPercent", 20);

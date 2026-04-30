@@ -220,7 +220,13 @@ void setUiElementState(lv_obj_t * obj, bool state){
   }
 }
 
+void setUILabelText(lv_obj_t * obj, String inText){
+  lv_label_set_text(obj, inText.c_str());
+}
+
 void initDisplayValues(){
+
+
 
   setSwitch(ui_EnableAlarmSwitch, savedsettings.alarmEnabled);
   // showmm
@@ -237,12 +243,20 @@ void initDisplayValues(){
   setSwitch(ui_showCounterSwitch, savedsettings.showCounter);
   setUiElementState(ui_CounterContainer, savedsettings.showCounter);
   setUiElementState(ui_CounterContainer, savedsettings.showCounter);
-  Serial.println(savedsettings.showMM);  
+   
   
+  setUILabelText(ui_maxPDist, String(savedsettings.maxPDist));
+  setUILabelText(ui_minPDist, String(savedsettings.minPDist));
 
+}
 
-
-  
+void updateDataDisplay(){
+  Serial.println(savedsettings.minPDist);
+  storePreferences();
+  Serial.println(savedsettings.minPDist);
+  getPreferences();
+  Serial.println(savedsettings.minPDist);
+  initDisplayValues();
 }
 
 
@@ -254,6 +268,24 @@ void initDisplayValues(){
         // lv_obj_remove_flag(panel, LV_OBJ_FLAG_HIDDEN); // Show
    
 }
+
+extern "C" {
+    void measurePEmptyLevelCallBack(lv_event_t * e) {
+      //set powder max level
+      savedsettings.maxPDist = 120;
+      updateDataDisplay();
+    }
+}
+
+extern "C" {
+    void measurePFullLevelCallBack(lv_event_t * e) {
+      //set powder max level
+      savedsettings.minPDist = 2;
+      updateDataDisplay();
+    }
+}
+
+
 
 
 
@@ -272,10 +304,12 @@ extern "C" {
     }
 }
 
+
+
 extern "C" {
     void toggleAlertCallBack(lv_event_t * e) {
       savedsettings.alarmEnabled = lv_obj_has_state(ui_EnableAlarmSwitch, LV_STATE_CHECKED);
-      storePreferences();
+      updateDataDisplay();
        
     }
 }
@@ -283,24 +317,21 @@ extern "C" {
 extern "C" {
     void toggleShowDistanceCallBack(lv_event_t * e) {
       savedsettings.showMM = lv_obj_has_state(ui_showDistanceSwitch, LV_STATE_CHECKED);
-      storePreferences();
-      initDisplayValues();
+      updateDataDisplay();
     }
 }
 
 extern "C" {
     void toggleShowShotCallBack(lv_event_t * e) {
       savedsettings.showShot = lv_obj_has_state(ui_showShotSwitch, LV_STATE_CHECKED);
-      storePreferences();
-      initDisplayValues();
+      updateDataDisplay();
     }
 }
 
 extern "C" {
     void toggleShowCounterCallBack(lv_event_t * e) {
       savedsettings.showCounter = lv_obj_has_state(ui_showCounterSwitch, LV_STATE_CHECKED);
-      storePreferences();
-      initDisplayValues();
+      updateDataDisplay();
     }
 }
 
@@ -310,11 +341,11 @@ void setup() {
   String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
   
-  delay(4000);
+  // delay(4000);
   initPreferences();
   getPreferences();
-  Serial.println(savedsettings.device_name);
-  Serial.println(savedsettings.showMM);
+
+
   
   // Start LVGL
   lv_init();
@@ -351,7 +382,7 @@ void setup() {
   
   ui_init();
   lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
-  initDisplayValues();
+  updateDataDisplay();
 
 
 }

@@ -46,3 +46,15 @@ def toggleShowCounterCallBack(event_struct):
 def toggleShowShotCallBack(event_struct):
     return
 
+
+def ClearAllSettingsCallback(event_struct):
+    return
+
+
+def measurePEmptyLevelCallBack(event_struct):
+    return
+
+
+def measurePFullLevelCallBack(event_struct):
+    return
+

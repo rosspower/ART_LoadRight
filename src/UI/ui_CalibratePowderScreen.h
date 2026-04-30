@@ -18,6 +18,26 @@ extern void ui_event_Menu_Button2(lv_event_t * e);
 extern lv_obj_t * ui_Menu_Button2;
 extern lv_obj_t * ui_Label10;
 extern lv_obj_t * ui_Container8;
+extern lv_obj_t * ui_Label18;
+extern lv_obj_t * ui_Panel2;
+extern lv_obj_t * ui_Container12;
+extern lv_obj_t * ui_Label19;
+extern lv_obj_t * ui_PowderCurrentDistance;
+extern lv_obj_t * ui_Label21;
+extern void ui_event_MeasureEmptyLevelButton(lv_event_t * e);
+extern lv_obj_t * ui_MeasureEmptyLevelButton;
+extern lv_obj_t * ui_Label25;
+extern lv_obj_t * ui_Container1;
+extern lv_obj_t * ui_Label20;
+extern lv_obj_t * ui_maxPDist;
+extern lv_obj_t * ui_Label22;
+extern void ui_event_MeasureFullLevelButton(lv_event_t * e);
+extern lv_obj_t * ui_MeasureFullLevelButton;
+extern lv_obj_t * ui_Label17;
+extern lv_obj_t * ui_Container9;
+extern lv_obj_t * ui_Label23;
+extern lv_obj_t * ui_minPDist;
+extern lv_obj_t * ui_Label24;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus
