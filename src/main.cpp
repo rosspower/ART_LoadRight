@@ -119,7 +119,7 @@ void setUILabelText(lv_obj_t * obj, String inText){
 void getSensorValues(){
   //read raw pvalue from sensor
   rawPValue = random(savedsettings.minPDist, savedsettings.maxPDist);
-  pValue = map(rawPValue, savedsettings.minPDist, savedsettings.maxPDist, 20, 0 );
+  pValue = map(rawPValue, savedsettings.minPDist, savedsettings.maxPDist, 45, 0 );
 
 }
 
@@ -147,21 +147,10 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
     x = map(p.x, 200, 3700, 1, SCREEN_WIDTH);
     y = map(p.y, 240, 3800, 1, SCREEN_HEIGHT);
     z = p.z;
-
     data->state = LV_INDEV_STATE_PRESSED;
-
     // Set the coordinates
     data->point.x = x;
     data->point.y = y;
-
-    // Print Touchscreen info about X, Y and Pressure (Z) on the Serial Monitor
-    // /* Serial.print("X = ");
-    // Serial.print(x);
-    // Serial.print(" | Y = ");
-    // Serial.print(y);
-    // Serial.print(" | Pressure = ");
-    // Serial.print(z);
-    // Serial.println();*/
   }
   else {
     data->state = LV_INDEV_STATE_RELEASED;
@@ -174,22 +163,15 @@ void setUiTextColor(lv_obj_t * obj, String inmode){
   int setColor = 0xffffff;
   if (inmode == "alert"){
     setColor = 0xFF0000;
-
   } else if (inmode == "warn"){
     setColor = 0xFF5C00;
-
   }
-
   lv_obj_set_style_text_color(obj, lv_color_hex(setColor), LV_PART_MAIN);
-
 }
 
 
 
 void updateDisplayValues(){
-
-
-
   setSwitch(ui_EnableAlarmSwitch, savedsettings.alarmEnabled);
   // showmm
   setSwitch(ui_showDistanceSwitch, savedsettings.showMM);
@@ -210,9 +192,6 @@ void updateDisplayValues(){
   setUILabelText(ui_maxPDist, String(savedsettings.maxPDist));
   setUILabelText(ui_minPDist, String(savedsettings.minPDist));
 
-  
-  
-
 }
 
 void updateRealTimeDisplay(){
@@ -231,7 +210,7 @@ void updateRealTimeDisplay(){
   myStr = tempStr.c_str(); // Get the underlying const char*
   lv_label_set_text(ui_roundCounterLabel, myStr);
   
-  if (pValue < alertPPercent){
+  if (pValue <= alertPPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
       setUiElementState(ui_alarmImage, 1);  
     } else {
@@ -243,7 +222,10 @@ void updateRealTimeDisplay(){
     setUiTextColor(ui_Powder_label, "alert");
 
     // lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF0000), LV_PART_MAIN);
-  } else if(pValue < warnPPercent){
+  } else if(pValue <= warnPPercent){
+    if (savedsettings.alarmEnabled == true){
+      setUiElementState(ui_alarmImage, 0);
+    }  
     lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
     setUiTextColor(ui_powderValueLabel, "warn");
     setUiTextColor(ui_Powder_label, "warn");
