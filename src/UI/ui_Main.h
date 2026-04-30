@@ -46,6 +46,8 @@ extern void ui_event_resetCounterButton(lv_event_t * e);
 extern lv_obj_t * ui_resetCounterButton;
 extern lv_obj_t * ui_Label6;
 extern lv_obj_t * ui_Label4;
+extern void ui_event_alarmImage(lv_event_t * e);
+extern lv_obj_t * ui_alarmImage;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

@@ -30,6 +30,7 @@ lv_obj_t * ui_Label7 = NULL;
 lv_obj_t * ui_resetCounterButton = NULL;
 lv_obj_t * ui_Label6 = NULL;
 lv_obj_t * ui_Label4 = NULL;
+lv_obj_t * ui_alarmImage = NULL;
 // event funtions
 void ui_event_powderSlider(lv_event_t * e)
 {
@@ -100,6 +101,15 @@ void ui_event_resetCounterButton(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         resetCounterCallBack(e);
+    }
+}
+
+void ui_event_alarmImage(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        alarmImageClickCallBack(e);
     }
 }
 
@@ -462,6 +472,19 @@ void ui_Main_screen_init(void)
     lv_obj_set_align(ui_Label4, LV_ALIGN_TOP_MID);
     lv_label_set_text(ui_Label4, "Reset Round Counter");
 
+    ui_alarmImage = lv_image_create(ui_Main);
+    lv_image_set_src(ui_alarmImage, &ui_img_alarm_png);
+    lv_obj_set_width(ui_alarmImage, 100);
+    lv_obj_set_height(ui_alarmImage, 100);
+    lv_obj_set_x(ui_alarmImage, 3);
+    lv_obj_set_y(ui_alarmImage, -48);
+    lv_obj_set_align(ui_alarmImage, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_alarmImage, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_alarmImage, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_radius(ui_alarmImage, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_alarmImage, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_alarmImage, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_powderSlider, ui_event_powderSlider, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_shotSlider, ui_event_shotSlider, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Menu_Button, ui_event_Menu_Button, LV_EVENT_ALL, NULL);
@@ -470,6 +493,7 @@ void ui_Main_screen_init(void)
     lv_obj_add_event_cb(ui_Container2, ui_event_Container2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_cancelRoundCntButton, ui_event_cancelRoundCntButton, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_resetCounterButton, ui_event_resetCounterButton, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_alarmImage, ui_event_alarmImage, LV_EVENT_ALL, NULL);
 
 }
 
@@ -503,5 +527,6 @@ void ui_Main_screen_destroy(void)
     ui_resetCounterButton = NULL;
     ui_Label6 = NULL;
     ui_Label4 = NULL;
+    ui_alarmImage = NULL;
 
 }

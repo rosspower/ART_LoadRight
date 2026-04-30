@@ -33,6 +33,7 @@ extern lv_obj_t * ui____initial_actions0;
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_btn_1_inact_png);    // assets/btn_1_inact.png
 LV_IMG_DECLARE(ui_img_btn_1_act_png);    // assets/btn_1_act.png
+LV_IMG_DECLARE(ui_img_alarm_png);    // assets/alarm.png
 
 // UI INIT
 void ui_init(void);

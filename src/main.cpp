@@ -46,83 +46,12 @@ XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-// Preferences prefs;
-
-// struct settings {
-//   String device_name;  // 1
-//   String device_desc;  // 2
-//   String mdns_name;
-//   int alarmEnabled;
-  
-//   int minPDist;  // The closest reading to the sensor in mm: 100% full
-//   int maxPDist; // The furthest reading from the sensor in mm: 0% full
-//   int minSDist;  // The closest reading to the sensor in mm: 100% full
-//   int maxSDist; // The furthest reading from the sensor in mm: 0% full
-//   int alertPPercent;
-//   int alertSPercent;
-//   int currentRndCount;
-//   int totalRndCnt;
-//   bool showMM = 1;
-//   bool showShot = true;
-//   bool showCounter = true;
-//  };
-
-// settings savedsettings;
+int update_interval = 250;
+// int alarmDelay = 5 * 60 * 1000;
+int alarmDelay = 10000;
 
 
-// void clearAllPreferences() { 
-//   Serial.println("clearing all eeprom");
-//   // nvs_flash_erase(); // erase the NVS partition and...
-//   // nvs_flash_init(); // initialize the NVS partition.
-//   // Begin Preferences with the current dynamic namespace
-//   prefs.begin("my-app");
-//   prefs.clear();
-//   prefs.end();
-// }
 
-
-// void initPreferences(){
-//     prefs.begin("my-app"); // use "my-app" namespace
-//     //prefs.clear();
-//     if (not prefs.isKey("settings")) {
-//         Serial.println("writting preferences");
-//         prefs.putBool("settings", true);
-//         prefs.putString("device_name", "AImRight SmartLoader");
-//         prefs.putString("device_desc", "An Intelligent Reloading System");
-//         prefs.putString("mdns_name", "SmartLoader");
-//         prefs.end();
-//     }
-//    prefs.end();
-// }
-
-// void storePreferences(){
-//     prefs.begin("my-app");
-//     Serial.println("inside storePreferences");
-//     prefs.putString("device_name", savedsettings.device_name);
-//     prefs.putString("device_desc", savedsettings.device_desc);
-//     prefs.putString("mdns_name", savedsettings.mdns_name);
-//     // prefs.putString("selected_motor",savedsettings.selected_motor);
-//     // prefs.putInt("num_poles", savedsettings.num_poles);
-//     // prefs.putInt("pass_kv", savedsettings.pass_kv);
-//     // prefs.putInt("pass_current", savedsettings.pass_current);
-//     // prefs.putInt("pass_rpm", savedsettings.pass_rpm);
-//     // prefs.putString("sn_ident", savedsettings.sn_ident);
-//     prefs.end();
-// }
-
-// void getPreferences(){
-//     prefs.begin("my-app");
-//     savedsettings.device_name = prefs.getString("device_name", "aimright smartloader");
-//     savedsettings.device_desc = prefs.getString("device_desc", "");
-//     savedsettings.mdns_name = prefs.getString("mdns_name", "smartLoader");
-//     // savedsettings.selected_motor = prefs.getString("selected_motor", "none");
-//     // savedsettings.num_poles = prefs.getInt("num_poles", 12);
-//     // savedsettings.pass_kv = prefs.getInt("pass_kv", 0);
-//     // savedsettings.pass_current = prefs.getInt("pass_current", 0);
-//     // savedsettings.pass_rpm = prefs.getInt("pass_rpm", 0);
-//     // savedsettings.sn_ident = prefs.getString("sn_ident", "123|123");
-//     prefs.end();
-// }
 
 
 
@@ -147,9 +76,15 @@ int grainsAddedStart = 0;
 int grainsAddedFinish = 0;
 int alertPercentGrains = 0;
 int currentRndCount = 0;
+long lastupdate = 0;
+long lastAlarmSilenced = 0;
+int pValue = 100;
+int sValue = 100;
+bool isAlarmSilenced = false;
 // bool showMM = true;
 // bool showShot = true;
 // bool showCounter = true;
+
 
 
 
@@ -160,6 +95,35 @@ int x, y, z;
 
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
+
+void setSwitch(lv_obj_t * obj, bool state){
+  if (state == 1){
+    lv_obj_add_state(obj, LV_STATE_CHECKED);
+  } else {
+    lv_obj_clear_state(obj, LV_STATE_CHECKED);
+  }
+}
+
+void setUiElementState(lv_obj_t * obj, bool state){
+  if (state == 1){
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+  }
+}
+
+void setUILabelText(lv_obj_t * obj, String inText){
+  lv_label_set_text(obj, inText.c_str());
+}
+
+void getSensorValues(){
+  //read raw pvalue from sensor
+  rawPValue = random(savedsettings.minPDist, savedsettings.maxPDist);
+  pValue = map(rawPValue, savedsettings.minPDist, savedsettings.maxPDist, 20, 0 );
+
+}
+
+
 
 
 
@@ -204,27 +168,25 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
   }
 }
 
-void setSwitch(lv_obj_t * obj, bool state){
-  if (state == 1){
-    lv_obj_add_state(obj, LV_STATE_CHECKED);
-  } else {
-    lv_obj_clear_state(obj, LV_STATE_CHECKED);
+
+
+void setUiTextColor(lv_obj_t * obj, String inmode){
+  int setColor = 0xffffff;
+  if (inmode == "alert"){
+    setColor = 0xFF0000;
+
+  } else if (inmode == "warn"){
+    setColor = 0xFF5C00;
+
   }
+
+  lv_obj_set_style_text_color(obj, lv_color_hex(setColor), LV_PART_MAIN);
+
 }
 
-void setUiElementState(lv_obj_t * obj, bool state){
-  if (state == 1){
-    lv_obj_remove_flag(obj, LV_OBJ_FLAG_HIDDEN);
-  } else {
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
-  }
-}
 
-void setUILabelText(lv_obj_t * obj, String inText){
-  lv_label_set_text(obj, inText.c_str());
-}
 
-void initDisplayValues(){
+void updateDisplayValues(){
 
 
 
@@ -248,6 +210,55 @@ void initDisplayValues(){
   setUILabelText(ui_maxPDist, String(savedsettings.maxPDist));
   setUILabelText(ui_minPDist, String(savedsettings.minPDist));
 
+  
+  
+
+}
+
+void updateRealTimeDisplay(){
+  // update live data
+  String tmpstring = String(rawPValue) + " mm";
+  setUILabelText(ui_powderdistValueLabel, tmpstring);
+
+  //calibrate powder height distance 
+  setUILabelText(ui_PowderCurrentDistance, String(rawPValue));
+
+  lv_slider_set_value(ui_powderSlider, pValue, LV_ANIM_ON);
+  String tempStr = String(pValue) + "%"; 
+  const char* myStr = tempStr.c_str(); // Get the underlying const char*
+  lv_label_set_text(ui_powderValueLabel, myStr);
+  tempStr = String(currentRndCount * 100); 
+  myStr = tempStr.c_str(); // Get the underlying const char*
+  lv_label_set_text(ui_roundCounterLabel, myStr);
+  
+  if (pValue < alertPPercent){
+    if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
+      setUiElementState(ui_alarmImage, 1);  
+    } else {
+      setUiElementState(ui_alarmImage, 0);  
+    }
+
+    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
+    setUiTextColor(ui_powderValueLabel, "alert");
+    setUiTextColor(ui_Powder_label, "alert");
+
+    // lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF0000), LV_PART_MAIN);
+  } else if(pValue < warnPPercent){
+    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
+    setUiTextColor(ui_powderValueLabel, "warn");
+    setUiTextColor(ui_Powder_label, "warn");
+    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF5C00), LV_PART_MAIN);
+  }
+  else {
+    if (savedsettings.alarmEnabled == true){
+      setUiElementState(ui_alarmImage, 0);
+    }
+    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0x127612), LV_PART_INDICATOR);
+    setUiTextColor(ui_powderValueLabel, "norm");
+    setUiTextColor(ui_Powder_label, "norm");
+    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
+  }
+
 }
 
 void updateDataDisplay(){
@@ -256,7 +267,8 @@ void updateDataDisplay(){
   Serial.println(savedsettings.minPDist);
   getPreferences();
   Serial.println(savedsettings.minPDist);
-  initDisplayValues();
+  updateDisplayValues();
+  updateRealTimeDisplay();
 }
 
 
@@ -294,13 +306,26 @@ extern "C" {
      clearAllPreferences();
      initPreferences();
      getPreferences();
-     initDisplayValues();
+     updateDisplayValues();
     }
 }
 
 extern "C" {
     void resetCounterCallBack(lv_event_t * e) {
       reset_counter();
+     
+     
+    }
+}
+
+extern "C" {
+    void alarmImageClickCallBack(lv_event_t * e) {
+      isAlarmSilenced = true;
+      Serial.println("alarm silenced");
+      setUiElementState(ui_alarmImage, 0);
+      lastAlarmSilenced = millis();
+      
+     
     }
 }
 
@@ -345,8 +370,6 @@ void setup() {
   initPreferences();
   getPreferences();
 
-
-  
   // Start LVGL
   lv_init();
   // Register print function for debugging
@@ -371,18 +394,12 @@ void setup() {
   // Set the callback function to read Touchscreen input
   lv_indev_set_read_cb(indev, touchscreen_read);
 
-  // Function to draw the GUI (text, buttons and sliders)
-
-  // // Example code snippet
-  // const int LEDPIN = 21; // Backlight pin
-  // ledcSetup(0, 5000, 8);  // Channel 0, 5kHz, 8-bit res
-  // ledcAttachPin(LEDPIN, 0);
-  // ledcWrite(0, 200);     // Dim to ~40% brightness (0-255)
-
-  
   ui_init();
   lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
+  lv_obj_add_flag(ui_alarmImage, LV_OBJ_FLAG_HIDDEN);    // Hide
   updateDataDisplay();
+
+
 
 
 }
@@ -407,23 +424,44 @@ void updatePowder(int inValue){
   
  
 }
-int pvalue = 100;
+
+void sudoCounter(){
+  currentRndCount +=1;
+  if (currentRndCount * 100 > 99999) currentRndCount = 0;
+
+}
+
 void loop() {
   lv_task_handler();  // let the GUI do its work
   lv_tick_inc(5);     // tell LVGL how much time has passed
   delay(5);           // let this time pass
   lv_timer_handler(); // Update the UI
 
-  static uint32_t last_time = 0;
-    if (millis() - last_time > 500) {
-        last_time = millis();
+  // static uint32_t last_time = 0;
+  //   if (millis() - last_time > 500) {
+  //       last_time = millis();
       
-        pvalue -=1;
-        currentRndCount +=1;
+  //       pvalue -=1;
+  //       currentRndCount +=1;
         
-        updatePowder(pvalue);
-        if (pvalue < 1) pvalue = 100;
-        if (currentRndCount * 100 > 99999) currentRndCount = 0;
+  //       updatePowder(pvalue);
+  //       if (pvalue < 1) pvalue = 100;
+  //       if (currentRndCount * 100 > 99999) currentRndCount = 0;
+  //   }
+
+    if (millis() - lastupdate > update_interval) {
+        lastupdate = millis();
+        getSensorValues();
+        updateRealTimeDisplay();
+        sudoCounter();
+ 
+    }
+
+    if (isAlarmSilenced == true){
+      if (millis() - lastAlarmSilenced > alarmDelay) {
+        isAlarmSilenced = false;
+        Serial.println("alarm silence Ended");
+      }
     }
   
 }

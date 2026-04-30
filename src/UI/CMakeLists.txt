@@ -7,6 +7,7 @@ SET(SOURCES ui_Main.c
     ui_helpers.c
     ui_events.c
     ui_img_btn_1_inact_png.c
-    ui_img_btn_1_act_png.c)
+    ui_img_btn_1_act_png.c
+    ui_img_alarm_png.c)
 
 add_library(ui ${SOURCES})
