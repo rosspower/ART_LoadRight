@@ -14,6 +14,9 @@ lv_obj_t * ui_CalibratePowderScreenButton = NULL;
 lv_obj_t * ui_Label1 = NULL;
 lv_obj_t * ui_CalibrateShotScreenButton = NULL;
 lv_obj_t * ui_Label9 = NULL;
+lv_obj_t * ui_Container10 = NULL;
+lv_obj_t * ui_Label26 = NULL;
+lv_obj_t * ui_brightnessSlider = NULL;
 lv_obj_t * ui_Container4 = NULL;
 lv_obj_t * ui_Label8 = NULL;
 lv_obj_t * ui_EnableAlarmSwitch = NULL;
@@ -62,6 +65,15 @@ void ui_event_CalibrateShotScreenButton(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         _ui_screen_change(&ui_CalibrateShotScreen, LV_SCR_LOAD_ANIM_NONE, 10, 0, &ui_CalibrateShotScreen_screen_init);
+    }
+}
+
+void ui_event_brightnessSlider(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_VALUE_CHANGED) {
+        brightnessSliderCallBack(e);
     }
 }
 
@@ -223,6 +235,37 @@ void ui_Menu_screen_init(void)
     lv_label_set_text(ui_Label9, "Calibrate Shot Height");
     lv_obj_set_style_text_font(ui_Label9, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Container10 = lv_obj_create(ui_Panel3);
+    lv_obj_remove_style_all(ui_Container10);
+    lv_obj_set_height(ui_Container10, 20);
+    lv_obj_set_width(ui_Container10, lv_pct(100));
+    lv_obj_set_x(ui_Container10, 1);
+    lv_obj_set_y(ui_Container10, -97);
+    lv_obj_set_align(ui_Container10, LV_ALIGN_CENTER);
+    lv_obj_set_flex_flow(ui_Container10, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui_Container10, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_Container10, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Label26 = lv_label_create(ui_Container10);
+    lv_obj_set_width(ui_Label26, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label26, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label26, -51);
+    lv_obj_set_y(ui_Label26, 0);
+    lv_obj_set_align(ui_Label26, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label26, "Brightness");
+    lv_obj_set_style_text_font(ui_Label26, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_brightnessSlider = lv_slider_create(ui_Panel3);
+    lv_slider_set_value(ui_brightnessSlider, 0, LV_ANIM_OFF);
+    if(lv_slider_get_mode(ui_brightnessSlider) == LV_SLIDER_MODE_RANGE) lv_slider_set_start_value(ui_brightnessSlider, 0,
+                                                                                                      LV_ANIM_OFF);
+    lv_obj_set_width(ui_brightnessSlider, 150);
+    lv_obj_set_height(ui_brightnessSlider, 10);
+    lv_obj_set_align(ui_brightnessSlider, LV_ALIGN_CENTER);
+
+    //Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
+    if(lv_obj_get_style_pad_top(ui_brightnessSlider, LV_PART_MAIN) > 0) lv_obj_set_style_pad_right(ui_brightnessSlider,
+                                                                                                       lv_obj_get_style_pad_right(ui_brightnessSlider, LV_PART_MAIN) + 1, LV_PART_MAIN);
     ui_Container4 = lv_obj_create(ui_Panel3);
     lv_obj_remove_style_all(ui_Container4);
     lv_obj_set_height(ui_Container4, 20);
@@ -347,6 +390,7 @@ void ui_Menu_screen_init(void)
     lv_obj_add_event_cb(ui_Return_Button, ui_event_Return_Button, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_CalibratePowderScreenButton, ui_event_CalibratePowderScreenButton, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_CalibrateShotScreenButton, ui_event_CalibrateShotScreenButton, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_brightnessSlider, ui_event_brightnessSlider, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_EnableAlarmSwitch, ui_event_EnableAlarmSwitch, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_showDistanceSwitch, ui_event_showDistanceSwitch, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_showCounterSwitch, ui_event_showCounterSwitch, LV_EVENT_ALL, NULL);
@@ -369,6 +413,9 @@ void ui_Menu_screen_destroy(void)
     ui_Label1 = NULL;
     ui_CalibrateShotScreenButton = NULL;
     ui_Label9 = NULL;
+    ui_Container10 = NULL;
+    ui_Label26 = NULL;
+    ui_brightnessSlider = NULL;
     ui_Container4 = NULL;
     ui_Label8 = NULL;
     ui_EnableAlarmSwitch = NULL;

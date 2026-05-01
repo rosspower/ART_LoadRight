@@ -14,6 +14,7 @@ struct settings {
   bool showMM;
   bool showShot;
   bool showCounter;
+  int brightness;
  };
 
 extern settings savedsettings;

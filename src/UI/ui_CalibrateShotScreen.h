@@ -14,9 +14,30 @@ extern "C" {
 extern void ui_CalibrateShotScreen_screen_init(void);
 extern void ui_CalibrateShotScreen_screen_destroy(void);
 extern lv_obj_t * ui_CalibrateShotScreen;
-extern void ui_event_Menu_Button1(lv_event_t * e);
-extern lv_obj_t * ui_Menu_Button1;
-extern lv_obj_t * ui_Label11;
+extern void ui_event_Menu_Button3(lv_event_t * e);
+extern lv_obj_t * ui_Menu_Button3;
+extern lv_obj_t * ui_Label27;
+extern lv_obj_t * ui_Container11;
+extern lv_obj_t * ui_Label28;
+extern lv_obj_t * ui_Panel1;
+extern lv_obj_t * ui_Container13;
+extern lv_obj_t * ui_Label29;
+extern lv_obj_t * ui_ShotCurrentDistance;
+extern lv_obj_t * ui_Label30;
+extern void ui_event_MeasureEmptyLevelButton1(lv_event_t * e);
+extern lv_obj_t * ui_MeasureEmptyLevelButton1;
+extern lv_obj_t * ui_Label31;
+extern lv_obj_t * ui_Container14;
+extern lv_obj_t * ui_Label32;
+extern lv_obj_t * ui_maxSDist;
+extern lv_obj_t * ui_Label33;
+extern void ui_event_MeasureFullLevelButton1(lv_event_t * e);
+extern lv_obj_t * ui_MeasureFullLevelButton1;
+extern lv_obj_t * ui_Label34;
+extern lv_obj_t * ui_Container15;
+extern lv_obj_t * ui_Label35;
+extern lv_obj_t * ui_minSDist;
+extern lv_obj_t * ui_Label36;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

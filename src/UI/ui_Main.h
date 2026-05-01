@@ -48,6 +48,8 @@ extern lv_obj_t * ui_Label6;
 extern lv_obj_t * ui_Label4;
 extern void ui_event_alarmImage(lv_event_t * e);
 extern lv_obj_t * ui_alarmImage;
+extern void ui_event_alarmImage1(lv_event_t * e);
+extern lv_obj_t * ui_alarmImage1;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

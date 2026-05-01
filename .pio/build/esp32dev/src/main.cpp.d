@@ -1115,4 +1115,17 @@
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/port/include/aes_alt.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/port/include/aes/esp_aes.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/aes_types.h \
- C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/mbedtls/include/mbedtls/error.h
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mbedtls/mbedtls/include/mbedtls/error.h \
+ .pio/libdeps/esp32dev/ESP32-Buzzer/src/ESP32S3Buzzer.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/VL53L1X_ULD.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/vl53l1_platform.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/vl53l1_types.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/../core/vl53l1_error_codes.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/../core/../platform/vl53l1_types.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/../core/VL53L1X_api.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/../core/../platform/vl53l1_platform.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/platform/../core/vl53l1_error_codes.h \
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h \
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/core/VL53L1X_api.h \
+ .pio/libdeps/esp32dev/VL53L1X_ULD/src/core/VL53L1X_calibration.h

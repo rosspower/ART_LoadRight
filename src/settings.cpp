@@ -42,6 +42,7 @@ void initPreferences(){
         prefs.putBool("showMM", true);
         prefs.putBool("showShot", true);
         prefs.putBool("showCounter", true);
+        prefs.putInt("brightness", 100);
         prefs.end();
     }
    prefs.end();
@@ -70,6 +71,7 @@ void storePreferences(){
     prefs.putBool("showMM", savedsettings.showMM);
     prefs.putBool("showShot", savedsettings.showShot);
     prefs.putBool("showCounter", savedsettings.showCounter);
+    prefs.putInt("brightness", savedsettings.brightness);
 
     prefs.end();
 }
@@ -95,5 +97,6 @@ void getPreferences(){
     savedsettings.showMM = prefs.getBool("showMM", true);
     savedsettings.showShot = prefs.getBool("showShot", true);
     savedsettings.showCounter = prefs.getBool("showCounter", true);
+    savedsettings.brightness = prefs.getInt("brightness", 127);
     prefs.end();
 }

@@ -62,3 +62,15 @@ def measurePFullLevelCallBack(event_struct):
 def alarmImageClickCallBack(event_struct):
     return
 
+
+def brightnessSliderCallBack(event_struct):
+    return
+
+
+def measureSEmptyLevelCallBack(event_struct):
+    return
+
+
+def measureSFullLevelCallBack(event_struct):
+    return
+

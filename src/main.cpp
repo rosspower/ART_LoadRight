@@ -28,10 +28,36 @@
 #include <ESPmDNS.h>
 #include <ESP32httpUpdate.h>
 
+#include "ESP32S3Buzzer.h"
+
+#include "VL53L1X_ULD.h"
+
+// CYD often uses 27 for SDA and 22 for SCL
+#define I2C_SDA 27
+#define I2C_SCL 22
+
+VL53L1X_ULD powderSensor;
+VL53L1X_ULD shotSensor;
+
+#define powderSensor_XSHUT 17
+#define shotSensor_I2C_ADDRESS 0x55
+
+
+
+// Set the buzzer pin and channel
+const uint8_t buzzerPin = 27;
+const uint8_t buzzerChannel = 0;
+
+// Create an instance of ESP32S3Buzzer
+ESP32S3Buzzer buzzer(buzzerPin, buzzerChannel);
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 // Connect to Wi-Fi
 WiFiManager wm;
+
+const int BACKLIGHT_PIN = 21;
+const int LDRPIN = 34; // LDR sensor
 
 // Touchscreen pins
 #define XPT2046_IRQ 36   // T_IRQ
@@ -46,7 +72,7 @@ XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 
-int update_interval = 250;
+int update_interval = 100;
 // int alarmDelay = 5 * 60 * 1000;
 int alarmDelay = 10000;
 
@@ -81,6 +107,10 @@ long lastAlarmSilenced = 0;
 int pValue = 100;
 int sValue = 100;
 bool isAlarmSilenced = false;
+bool isAlarmed = false;
+bool hasi2Device = false;
+bool hasPowderSensor = false;
+bool hasShotSensor = false;
 // bool showMM = true;
 // bool showShot = true;
 // bool showCounter = true;
@@ -117,9 +147,16 @@ void setUILabelText(lv_obj_t * obj, String inText){
 }
 
 void getSensorValues(){
-  //read raw pvalue from sensor
-  rawPValue = random(savedsettings.minPDist, savedsettings.maxPDist);
-  pValue = map(rawPValue, savedsettings.minPDist, savedsettings.maxPDist, 45, 0 );
+  if (hasPowderSensor){
+     pValue = map(rawPValue, savedsettings.minPDist, savedsettings.maxPDist, 100, 0 );
+    if (pValue < 0) pValue = 0;
+    if (pValue > 100) pValue = 100;
+  }
+ 
+
+  //read raw svalue from sensor
+  rawSValue = random(savedsettings.minSDist, savedsettings.maxSDist);
+  sValue = map(rawSValue, savedsettings.minSDist, savedsettings.maxSDist, 100, 0 );
 
 }
 
@@ -157,6 +194,15 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
   }
 }
 
+void playBuzzer(){
+  // Add a tone to the queue
+  uint32_t freq = 1000;
+  uint32_t onDuration = 200;
+  uint32_t offDuration = 200;
+  uint16_t cycles = 5;
+  buzzer.tone(freq, onDuration, offDuration, cycles);
+}
+
 
 
 void setUiTextColor(lv_obj_t * obj, String inmode){
@@ -164,7 +210,7 @@ void setUiTextColor(lv_obj_t * obj, String inmode){
   if (inmode == "alert"){
     setColor = 0xFF0000;
   } else if (inmode == "warn"){
-    setColor = 0xFF5C00;
+    setColor = 0xFF4D01;
   }
   lv_obj_set_style_text_color(obj, lv_color_hex(setColor), LV_PART_MAIN);
 }
@@ -181,28 +227,88 @@ void updateDisplayValues(){
   //showShot
   setSwitch(ui_showShotSwitch, savedsettings.showShot);
   setUiElementState(ui_ShotIndicator, savedsettings.showShot);
-  setUiElementState(ui_ShotIndicator, savedsettings.showShot);
+  if (hasShotSensor == false) setUiElementState(ui_ShotIndicator, 0);
 
   //showCounter
   setSwitch(ui_showCounterSwitch, savedsettings.showCounter);
   setUiElementState(ui_CounterContainer, savedsettings.showCounter);
-  setUiElementState(ui_CounterContainer, savedsettings.showCounter);
+
    
   
   setUILabelText(ui_maxPDist, String(savedsettings.maxPDist));
   setUILabelText(ui_minPDist, String(savedsettings.minPDist));
 
+  setUILabelText(ui_maxSDist, String(savedsettings.maxSDist));
+  setUILabelText(ui_minSDist, String(savedsettings.minSDist));
+
+  lv_slider_set_value(ui_brightnessSlider, savedsettings.brightness, LV_ANIM_OFF);
+
 }
 
-void updateRealTimeDisplay(){
-  // update live data
+void updateShotRTDisplay(){
+    String tmpstring = String(rawSValue) + " mm";
+  setUILabelText(ui_shotDistValueLabel, tmpstring);
+
+  //calibrate powder height distance 
+  setUILabelText(ui_ShotCurrentDistance, String(rawSValue));
+
+  int sliderValue = sValue;
+  if (sliderValue < 3) sliderValue = 3;
+
+  lv_slider_set_value(ui_shotSlider, sliderValue, LV_ANIM_ON);
+  String tempStr = String(sValue) + "%"; 
+  const char* myStr = tempStr.c_str(); // Get the underlying const char*
+  lv_label_set_text(ui_ShotValueLabel, myStr);
+  // tempStr = String(currentRndCount * 100); 
+  // myStr = tempStr.c_str(); // Get the underlying const char*
+  // lv_label_set_text(ui_roundCounterLabel, myStr);
+  
+  if (sValue <= alertSPercent){
+    if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
+      setUiElementState(ui_alarmImage1, 1);
+      playBuzzer();  
+    } else {
+      setUiElementState(ui_alarmImage1, 0);  
+    }
+
+    lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
+    setUiTextColor(ui_ShotValueLabel, "alert");
+    setUiTextColor(ui_Shot_Label, "alert");
+
+    // lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF0000), LV_PART_MAIN);
+  } else if(sValue <= warnSPercent){
+    if (savedsettings.alarmEnabled == true){
+      setUiElementState(ui_alarmImage1, 0);
+    }  
+    lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
+    setUiTextColor(ui_ShotValueLabel, "warn");
+    setUiTextColor(ui_Shot_Label, "warn");
+    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF5C00), LV_PART_MAIN);
+  }
+  else {
+    if (savedsettings.alarmEnabled == true){
+      setUiElementState(ui_alarmImage1, 0);
+    }
+    lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0x127612), LV_PART_INDICATOR);
+    setUiTextColor(ui_ShotValueLabel, "norm");
+    setUiTextColor(ui_Shot_Label, "norm");
+    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
+  }
+}
+
+void updatePowderRTDisplay(){
+   // update live data
+
   String tmpstring = String(rawPValue) + " mm";
   setUILabelText(ui_powderdistValueLabel, tmpstring);
 
   //calibrate powder height distance 
   setUILabelText(ui_PowderCurrentDistance, String(rawPValue));
 
-  lv_slider_set_value(ui_powderSlider, pValue, LV_ANIM_ON);
+  int sliderValue = pValue;
+  if (sliderValue < 3) sliderValue = 3;
+
+  lv_slider_set_value(ui_powderSlider, sliderValue, LV_ANIM_ON);
   String tempStr = String(pValue) + "%"; 
   const char* myStr = tempStr.c_str(); // Get the underlying const char*
   lv_label_set_text(ui_powderValueLabel, myStr);
@@ -212,7 +318,8 @@ void updateRealTimeDisplay(){
   
   if (pValue <= alertPPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
-      setUiElementState(ui_alarmImage, 1);  
+      setUiElementState(ui_alarmImage, 1); 
+      playBuzzer(); 
     } else {
       setUiElementState(ui_alarmImage, 0);  
     }
@@ -243,110 +350,250 @@ void updateRealTimeDisplay(){
 
 }
 
+void updateRealTimeDisplay(){
+  updatePowderRTDisplay();
+  if((savedsettings.showShot == true) && (hasShotSensor))
+  updateShotRTDisplay();
+ 
+
+  
+
+}
+
 void updateDataDisplay(){
-  Serial.println(savedsettings.minPDist);
   storePreferences();
-  Serial.println(savedsettings.minPDist);
   getPreferences();
-  Serial.println(savedsettings.minPDist);
   updateDisplayValues();
   updateRealTimeDisplay();
 }
 
 
- void reset_counter() {
-        // Serial.println("Button Clicked!");
-        // Add your logic here (e.g., toggle an LED)
-        currentRndCount = 0;
-        lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
-        // lv_obj_remove_flag(panel, LV_OBJ_FLAG_HIDDEN); // Show
-   
+void reset_counter() {
+  currentRndCount = 0;
+  lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
 }
 
 extern "C" {
-    void measurePEmptyLevelCallBack(lv_event_t * e) {
-      //set powder max level
-      savedsettings.maxPDist = 120;
-      updateDataDisplay();
-    }
-}
+  void measurePEmptyLevelCallBack(lv_event_t * e) {
+    //set powder max level
+    savedsettings.maxPDist = rawPValue;
+    updateDataDisplay();
+  }
 
-extern "C" {
-    void measurePFullLevelCallBack(lv_event_t * e) {
-      //set powder max level
-      savedsettings.minPDist = 2;
-      updateDataDisplay();
-    }
-}
+  void measurePFullLevelCallBack(lv_event_t * e) {
+    //set powder max level
+    savedsettings.minPDist = rawPValue;
+    updateDataDisplay();
+  }
 
+  void measureSEmptyLevelCallBack(lv_event_t * e) {
+    //set powder max level
+    savedsettings.maxSDist = 138;
+    updateDataDisplay();
+  }
 
+  void measureSFullLevelCallBack(lv_event_t * e) {
+    //set powder max level
+    savedsettings.minSDist = 7;
+    updateDataDisplay();
+  }
 
+  void brightnessSliderCallBack(lv_event_t * e) {
+    int32_t sliderValue = lv_slider_get_value(ui_brightnessSlider);
+    savedsettings.brightness = sliderValue;
+    updateDataDisplay();
+    int brightness = map(sliderValue, 0, 100, 50, 255); // Map, adjusting for 8-bit PWM
+    analogWrite(BACKLIGHT_PIN, brightness);
+  }
 
-
-extern "C" {
-    void ClearAllSettingsCallback(lv_event_t * e) {
+  void ClearAllSettingsCallback(lv_event_t * e) {
      clearAllPreferences();
      initPreferences();
      getPreferences();
      updateDisplayValues();
     }
-}
 
-extern "C" {
     void resetCounterCallBack(lv_event_t * e) {
       reset_counter();
-     
-     
     }
-}
 
-extern "C" {
     void alarmImageClickCallBack(lv_event_t * e) {
       isAlarmSilenced = true;
       Serial.println("alarm silenced");
       setUiElementState(ui_alarmImage, 0);
       lastAlarmSilenced = millis();
-      
-     
     }
-}
 
-
-
-extern "C" {
     void toggleAlertCallBack(lv_event_t * e) {
       savedsettings.alarmEnabled = lv_obj_has_state(ui_EnableAlarmSwitch, LV_STATE_CHECKED);
       updateDataDisplay();
-       
     }
-}
 
-extern "C" {
     void toggleShowDistanceCallBack(lv_event_t * e) {
       savedsettings.showMM = lv_obj_has_state(ui_showDistanceSwitch, LV_STATE_CHECKED);
       updateDataDisplay();
     }
-}
 
-extern "C" {
     void toggleShowShotCallBack(lv_event_t * e) {
       savedsettings.showShot = lv_obj_has_state(ui_showShotSwitch, LV_STATE_CHECKED);
       updateDataDisplay();
     }
-}
 
-extern "C" {
     void toggleShowCounterCallBack(lv_event_t * e) {
       savedsettings.showCounter = lv_obj_has_state(ui_showCounterSwitch, LV_STATE_CHECKED);
       updateDataDisplay();
     }
+
+
+
+}
+
+boolean i2cScanner(){
+  bool result = false;
+   byte error, address;
+  int nDevices;
+  Serial.println("Scanning...");
+  nDevices = 0;
+  for(address = 1; address < 127; address++ ) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+    if (error == 0) {
+      Serial.print("I2C device found at address 0x");
+      if (address<16) {
+        Serial.print("0");
+      }
+      Serial.println(address,HEX);
+      nDevices++;
+    }
+    else if (error==4) {
+      Serial.print("Unknow error at address 0x");
+      if (address<16) {
+        Serial.print("0");
+      }
+      Serial.println(address,HEX);
+    }    
+  }
+  if (nDevices == 0) {
+    Serial.println("No I2C devices found\n");
+  }
+  else {
+    Serial.println("done\n");
+  }
+  if (nDevices > 0){
+    hasi2Device = true;
+    result = true;
+  }
+
+  return result;
+}
+void sensorSetup(){
+  digitalWrite(powderSensor_XSHUT, LOW);
+
+  if (i2cScanner() == true){
+    // Initialize sensor 2
+    VL53L1_Error status = shotSensor.Begin(shotSensor_I2C_ADDRESS);
+    if (status != VL53L1_ERROR_NONE) {
+      // If the sensor could not be initialized print out the error code. -7 is timeout
+      Serial.println("Could not initialize sensor 2, error code: " + String(status));
+      // while (1) {}
+    } else {
+      Serial.println("Shot Sensor initialized");
+      // Set the I2C address of sensor 2 to a different address as the default. 
+      shotSensor.SetI2CAddress(shotSensor_I2C_ADDRESS);
+      shotSensor.StartRanging();
+      hasShotSensor = true;
+    }
+    
+  } else {
+    Serial.println("Did not find Shot Sensor after disabling Powder Sensor");
+  }
+
+  
+
+  // Turn on sensor 1 by pulling the XSHUT pin HIGH
+  digitalWrite(powderSensor_XSHUT, HIGH);
+
+  // Initialize sensor 1
+  VL53L1_Error status = powderSensor.Begin();
+  if (status != VL53L1_ERROR_NONE) {
+    // If the sensor could not be initialized print out the error code. -7 is timeout
+    Serial.println("Could not initialize sensor 1, error code: " + String(status));
+    // while (1) {}
+  } else {
+    Serial.println("Sensor initialized");
+    hasPowderSensor = true;
+    powderSensor.StartRanging();
+  }
+ 
+
+  
+ 
+
+}
+
+void readPowderSensor(){
+  // Checking if data is available. This can also be done through the hardware interrupt
+  uint8_t dataReady_powderSensor = false;
+  while(!dataReady_powderSensor) {
+    powderSensor.CheckForDataReady(&dataReady_powderSensor);
+    delay(5);
+  }
+
+  // Get the results
+  uint16_t distance1, distance2;
+  powderSensor.GetDistanceInMm(&distance1);
+  Serial.println("Powder Sensor Distance in mm: " + String(distance1));
+  rawPValue = distance1;
+  
+
+  // After reading the results reset the interrupt to be able to take another measurement
+  powderSensor.ClearInterrupt();
+ 
+}
+
+void readshotSensor(){
+  // Checking if data is available. This can also be done through the hardware interrupt
+  uint8_t dataReady_shotSensor = false;
+  while(!dataReady_shotSensor) {
+    shotSensor.CheckForDataReady(&dataReady_shotSensor);
+    delay(5);
+  }
+
+  // Get the results
+  uint16_t distance2;
+  shotSensor.GetDistanceInMm(&distance2);
+  Serial.println("Shot Sensor Distance in mm: " + String(distance2));
+
+  // After reading the results reset the interrupt to be able to take another measurement
+  shotSensor.ClearInterrupt();
 }
 
 
 
 void setup() {
-  String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
+  // Initialize the buzzer
+  //buzzer.begin();
+  // String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
+    // Turn off sensor 1 by pulling the XSHUT pin LOW
+  pinMode(powderSensor_XSHUT, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(19, OUTPUT);
+
+  digitalWrite(powderSensor_XSHUT, HIGH);
+  digitalWrite(4, LOW);
+  digitalWrite(16, LOW);
+
+
+
+
+  // Initialize I2C with specific pins
+  Wire.begin(I2C_SDA, I2C_SCL);
+  if (i2cScanner() == true){
+    sensorSetup();  
+  }
+ 
+  
   
   // delay(4000);
   initPreferences();
@@ -375,10 +622,17 @@ void setup() {
   lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
   // Set the callback function to read Touchscreen input
   lv_indev_set_read_cb(indev, touchscreen_read);
-
   ui_init();
-  lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
-  lv_obj_add_flag(ui_alarmImage, LV_OBJ_FLAG_HIDDEN);    // Hide
+
+  setUiElementState(ui_resetCounterPanel, 0);
+  setUiElementState(ui_alarmImage, 0);
+  setUiElementState(ui_alarmImage1, 0);
+ 
+
+  // set initial brightness from prefs
+  int brightness = map(savedsettings.brightness, 0, 100, 50, 255); // Map, adjusting for 8-bit PWM
+      analogWrite(BACKLIGHT_PIN, brightness);
+
   updateDataDisplay();
 
 
@@ -387,25 +641,7 @@ void setup() {
 }
 
 
-void updatePowder(int inValue){
-  lv_slider_set_value(ui_powderSlider, inValue, LV_ANIM_ON);
-  String tempStr = String(inValue) + "%"; 
-  const char* myStr = tempStr.c_str(); // Get the underlying const char*
-  lv_label_set_text(ui_powderValueLabel, myStr);
-  tempStr = String(currentRndCount * 100); 
-  myStr = tempStr.c_str(); // Get the underlying const char*
-  lv_label_set_text(ui_roundCounterLabel, myStr);
-  if (inValue < alertPPercent){
-    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
-  } else if(inValue < warnPPercent){
-    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
-  }
-  else {
-    lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0x127612), LV_PART_INDICATOR);
-  }
-  
- 
-}
+
 
 void sudoCounter(){
   currentRndCount +=1;
@@ -413,7 +649,11 @@ void sudoCounter(){
 
 }
 
+
+
 void loop() {
+    // Call the update method to process tones in the queue
+  buzzer.update();
   lv_task_handler();  // let the GUI do its work
   lv_tick_inc(5);     // tell LVGL how much time has passed
   delay(5);           // let this time pass
@@ -436,6 +676,10 @@ void loop() {
         getSensorValues();
         updateRealTimeDisplay();
         sudoCounter();
+        if (hasPowderSensor == true){
+           readPowderSensor();
+        }
+       
  
     }
 
@@ -445,5 +689,6 @@ void loop() {
         Serial.println("alarm silence Ended");
       }
     }
+
   
 }

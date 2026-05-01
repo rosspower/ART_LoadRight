@@ -10,6 +10,10 @@
             "includePath": [
                 "D:/Documents/PlatformIO/Projects/ART_LoadRight/include",
                 "D:/Documents/PlatformIO/Projects/ART_LoadRight/src",
+                "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
+                "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/VL53L1X_ULD/src",
+                "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
+                "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/ESP32-Buzzer/src",
                 "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/ESP32httpUpdate/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
@@ -233,14 +237,12 @@
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Insights/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/NetBIOS/src",
-                "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/RainMaker/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/SimpleBLE/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -248,6 +250,10 @@
                 "path": [
                     "D:/Documents/PlatformIO/Projects/ART_LoadRight/include",
                     "D:/Documents/PlatformIO/Projects/ART_LoadRight/src",
+                    "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
+                    "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/VL53L1X_ULD/src",
+                    "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
+                    "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/ESP32-Buzzer/src",
                     "D:/Documents/PlatformIO/Projects/ART_LoadRight/.pio/libdeps/esp32dev/ESP32httpUpdate/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
@@ -471,14 +477,12 @@
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Insights/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/NetBIOS/src",
-                    "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/RainMaker/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/SimpleBLE/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },
