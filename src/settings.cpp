@@ -6,6 +6,11 @@ Preferences prefs;
 
 settings savedsettings;
 
+String nospaces(String str){
+  str.replace(" ", "");
+    return str;
+}
+
 void clearAllPreferences() { 
   Serial.println("clearing all eeprom");
   // nvs_flash_erase(); // erase the NVS partition and...
@@ -22,6 +27,15 @@ void initPreferences(){
     //prefs.clear();
     if (not prefs.isKey("settings")) {
         Serial.println("writting preferences");
+
+        prefs.putString("device_name", project_name);
+        prefs.putString("device_desc", project_name);
+        prefs.putString("mdns_name", nospaces(project_name));
+        prefs.putInt("can_speed", 1);
+        prefs.putString("ssid_name", project_name);
+        prefs.putString("ssid_pass", project_name);
+        prefs.putInt("wifiMode", 2); // 0:none, 1:connected, 2:standalone
+
         prefs.putBool("settings", true);
         prefs.putString("device_name", "AImRight SmartLoader");
         prefs.putString("device_desc", "An Intelligent Reloading System");
@@ -54,7 +68,10 @@ void storePreferences(){
     prefs.putString("device_name", savedsettings.device_name);
     prefs.putString("device_desc", savedsettings.device_desc);
     prefs.putString("mdns_name", savedsettings.mdns_name);
-
+    
+    prefs.putString("ssid_name", savedsettings.ssid_name);
+    prefs.putString("ssid_pass", savedsettings.ssid_password);
+    prefs.putInt("wifi_mode", savedsettings.wifiMode);
     prefs.putBool("alarmEnabled", savedsettings.alarmEnabled);
     
     prefs.putInt("minPDist", savedsettings.minPDist);
@@ -80,7 +97,10 @@ void getPreferences(){
     prefs.begin("my-app");
     savedsettings.device_name = prefs.getString("device_name", "aimright smartloader");
     savedsettings.device_desc = prefs.getString("device_desc", "");
-    savedsettings.mdns_name = prefs.getString("mdns_name", "smartLoader");
+    savedsettings.mdns_name = prefs.getString("mdns_name", nospaces(project_name));
+    savedsettings.ssid_name = prefs.getString("ssid_name", project_name);
+    savedsettings.ssid_password = prefs.getString("ssid_pass", project_name);
+    savedsettings.wifiMode = prefs.getInt("wifiMode", 0);
     savedsettings.alarmEnabled = prefs.getBool("alarmEnabled", true);
     
     savedsettings.minPDist = prefs.getInt("minPDist", 5);

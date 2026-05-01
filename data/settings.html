@@ -1,0 +1,294 @@
+<!DOCTYPE HTML><html>
+    <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ePropelled UDCD</title>
+    <link rel="icon" href="/favicon.png" sizes="192x192" />
+    <link rel="stylesheet" type="text/css" href="epwc.css">
+     <script type="application/javascript" src="/common.js"></script>
+      <style>
+          textarea {
+    width: 300px; /* Set the width of the text area */
+    height: 150px; /* Set the height of the text area */
+    resize: vertical; /* Allow vertical resizing by the user */
+  }
+      </style>
+    </head>
+    <body class="app-background" style="min-height: 730px;">
+        <div id="header-container">
+    <div class="mobile-container">
+      <div class="topnav">
+        <a href="/index.html" class="active">
+          <table style="width:100%">
+            <tr>
+              <td style="width:12% ">
+                <div id="main-img"></div>
+              </td>
+              <td style="width:33%; text-align: center;">
+                <span id="device-name-label" style="font-weight: bolder; font-size: larger; color:black"></span>
+              </td>
+              <td style="width:10%"></td>
+            </tr>
+          </table>
+        </a>
+        <div id="myLinks">
+          <a href="/index.html">Device Info</a>
+          <a href="/rtdm.html">Real Time Monitoring</a>
+          <a href="/parameters.html">Device Parameters</a>
+          <a href="/settings.html">UDCD Setting</a>
+          <a href="/update.html">Update UDCD Firmware</a>
+          <a href="https://epropelled.com/" target="_blank">About</a>
+        </div>
+        <a href="javascript:void(0);" class="icon" id="menuicon" title="Menu" onclick="menuFunction()">
+          <img src="menu.png" alt="ePropelled" height="40">
+        </a>
+      </div>
+    </div>
+  </div>
+        <form action="/set_settings" onsubmit="pushchanged()" id="settings_form">
+          <fieldset>
+              <legend>Device Identification</legend>
+              <table>
+                <tr><td>Name:</td><td style="position: relative;"><input type="text" id="deviceName" name="device_name" title="the name of the UDCD Device" maxlength="15" title="Max length 25" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)"></td></tr>
+                <tr><td>Desc:</td><td style="position: relative;"><input type="text" id="deviceDesc" name="device_desc" title="a description of the UDCD Device" maxlength="50" title="Max length 50" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)"></td></tr>
+                <tr><td>UDCD Version:</td><td style="position: relative;"><input type='text' id="udcd_version" title="The Current Version of the UDCD" class='data-field' readonly></td></tr>
+                <tr><td>Ip Address:</td><td style="position: relative;"><input type='text' id="ip_address" title="The Current IP of the UDCD" class='data-field' readonly></td></tr>
+              </table>
+              </table>
+          </fieldset>
+          <fieldset>
+              <legend>Logging</legend>
+              <table>
+                <tr><td>Logging Interval:</td><td style="position: relative;"><input type="number" id="logging_interval" name="logging_interval" title="logging interval in milliseconds (1000 = 1 second)" min="10" max="2000" title="Logging interval in milliseconds" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)"></td></tr>
+              </table>
+          </fieldset>
+          <fieldset style="position: relative;">
+            <legend>Wifi Mode:</legend>
+            <label for="select_wifi_mode">Choose a WiFi Mode:</label>
+            <select id="select_wifi_mode" name="wifi_mode" title="how the UDCD Device connects" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)">
+              <!-- <option value="0">None</option> -->
+              <option value="1">Connected</option>
+              <option value="2">StandAlone(AP Mode)</option>
+            </select>
+          </fieldset>
+          <fieldset >
+            <legend>mDns Name</legend>
+              <div style="position: relative;">
+                <input type="text" id="mdns_name" name="mdns_name" maxlength="25" title="the name of the UDCD Device when using .local" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)">
+              </div>
+          </fieldset>
+          <fieldset>
+            <legend>CAN Bus Speed</legend>
+              <div style="position: relative;">
+                <select id="can_speed" name="can_speed" title="CAN bus connection speed(must match the connected device)" class="data-field" style = "background-color: white; max-width: 150px;" onchange="addclasser(this)">
+                  <option value="0">500kBps</option>
+                  <option value="1">1MBps</option>
+                </select> 
+              </div>
+          </fieldset>
+
+          <fieldset style="margin-top: 8px;"  id="last_div">
+            <input class="favorite styled" type="button" value="Reset Wi-Fi" title="clear and reset the Wi-Fi SSN and password"  onclick="wifiReset()" />
+            <input class="favorite styled" type="button" value="Reset All" style="background-color: darkred;margin-left: 10px;" title="Reset all Settings on the UDCD" onclick="allReset()" />
+            <input id="save_button"  class="favorite styled" style="float: right; display:none" type="submit" value="Save">
+          </fieldset>
+       </form>
+      
+
+</body>
+</html>
+
+<script>
+
+ 
+
+const slowInterval = setInterval(function ( ) {
+    //getRssi();
+}, 2000 ) ; 
+
+function isMobileMediaQuery() {
+  return window.matchMedia("(max-width: 767px)").matches; // Example for screens less than 768px wide
+}
+
+function click_loader(){
+  
+  const elements = document.querySelectorAll('.data-field');
+  // Using forEach (more concise)
+  elements.forEach(element => {
+      element.addEventListener('click', function(event) {
+          var title = element.parentElement.querySelector('.click-title');
+          if (title){
+            if(title.length){
+              const newSpan = document.createElement('span');
+              newSpan.classList.add('click-title');
+              newSpan.textContent = element.title;
+              element.parentElement.appendChild(newSpan);
+            } else {
+              title.remove();
+            }
+          } else {
+            const newSpan = document.createElement('span');
+            newSpan.classList.add('click-title');
+            newSpan.textContent = element.title;
+            element.parentElement.appendChild(newSpan);
+          }
+      
+        
+      });
+      element.addEventListener('focus', () => {
+        originalValue = element.value;
+      });
+      element.addEventListener('blur', () => {
+        var title = element.parentElement.querySelector('.click-title');
+        if (title){
+          if(title.length){
+          } else {
+            title.remove();
+          }
+        }
+      });
+
+  });
+
+}
+
+
+window.addEventListener("load", (event) => {
+  getSettings();
+  if (isMobileMediaQuery() == true){
+    click_loader();
+  }
+  
+});
+
+const form = document.getElementById('settings_form'); 
+let formChanged = false;
+
+form.addEventListener('change', (event) => {
+  formChanged = true;
+  // console.log('Form value changed:', event.target);
+  document.getElementById('save_button').style.display = "block";
+  
+  // You can perform further actions here, like enabling a "Save" button
+});
+  
+
+function hasClass(element, cls) {
+    return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+}   
+
+function pushchanged(){
+    f = document.getElementById('settings_form')
+    for (var i = f.elements.length; i--;)
+    {
+        var o = f.elements[i];
+        var inputs = ['input', 'select', 'button', 'textarea', 'radio'];
+        // if (inputs.indexOf(o.tagName.toLowerCase()) !== -1){
+        //     console.log("in inputs"); 
+        //     if (o.classList.contains('changed')){
+        //         console.log("got a change");
+        //     } else {
+        //     console.log(o.id);
+        //     o.disabled = true;
+        //     console.log("disabled");
+        //     }
+            
+
+        // }else {
+            
+        // }
+        
+   
+    
+    }
+    document.getElementById('select_wifi_mode').disabled = false;
+}
+
+
+
+function addclasser(element){
+    element.className += " changed";
+    console.log("added") 
+}
+
+
+function wifiReset(){
+    let answer = confirm("This will clear all your Wifi settings\nPress OK to Reset/Clear Wifi Settings\n if changing the mDns name, press Cancel and Save Settings");
+    if (answer == true){
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+            }
+        };
+        xhttp.open("GET", "/wifi-reset", true);
+        xhttp.send();
+    }
+}
+
+function allReset(){
+    let answer = confirm("This will clear all your settings and WiFi Settings\nPress OK to Reset/Clear All Settings\n if changing the mDns name, press Cancel and Save Settings");
+    if (answer == true){
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+            }
+        };
+        xhttp.open("GET", "/all-reset", true);
+        xhttp.send();
+    }
+} 
+
+function getDateTime(){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        let dTime = this.responseText;
+        //do this to adjust for the "local timezone offest"
+        dTime = dTime + "+00:00";
+        var now = new Date(Date.parse(dTime));
+          
+        document.getElementById('date_time').value = now.toISOString().slice(0,16);
+      }
+    };
+    xhttp.open("GET", "/get_time", true);
+    xhttp.send();
+}
+
+
+
+
+function getSettings(){
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+ 
+
+    if (this.readyState == 4 && this.status == 200) {
+      let settingsJson = JSON.parse(this.responseText);
+      console.log(settingsJson);
+      document.getElementById("device-name-label").innerHTML = settingsJson.device_name;
+      document.getElementById("deviceName").value = settingsJson.device_name;
+      document.getElementById("deviceDesc").value = settingsJson.device_desc;
+      document.getElementById("mdns_name").value = settingsJson.mdns_name;
+      document.getElementById("can_speed").value = settingsJson.can_speed;
+      document.getElementById("logging_interval").value = settingsJson.log_interval;
+      document.getElementById("udcd_version").value = settingsJson.UDCD_version;
+      document.getElementById("ip_address").value = settingsJson.ip_address;
+      
+      const selectElement = document.getElementById('select_wifi_mode');
+      var wifiMode = settingsJson.wifi_mode;
+      selectElement.value = wifiMode;
+   
+    }
+  };
+  xhttp.open("GET", "/get_settings", true);
+  xhttp.send();
+
+}
+
+
+
+
+
+
+
+   
+</script>

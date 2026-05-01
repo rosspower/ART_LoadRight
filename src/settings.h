@@ -15,10 +15,16 @@ struct settings {
   bool showShot;
   bool showCounter;
   int brightness;
+  String ssid_name;
+  String ssid_password;
+  int wifiMode;
  };
+
+#define project_name "AimRight SmartLoader" 
 
 extern settings savedsettings;
 void clearAllPreferences();
 void initPreferences();
 void storePreferences();
 void getPreferences();
+String nospaces(String str);

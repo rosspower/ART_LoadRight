@@ -32,6 +32,8 @@
 
 #include "VL53L1X_ULD.h"
 
+
+
 // CYD often uses 27 for SDA and 22 for SCL
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -125,6 +127,8 @@ int x, y, z;
 
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
+
+
 
 void setSwitch(lv_obj_t * obj, bool state){
   if (state == 1){
@@ -542,7 +546,7 @@ void readPowderSensor(){
   // Get the results
   uint16_t distance1, distance2;
   powderSensor.GetDistanceInMm(&distance1);
-  Serial.println("Powder Sensor Distance in mm: " + String(distance1));
+  //Serial.println("Powder Sensor Distance in mm: " + String(distance1));
   rawPValue = distance1;
   
 
@@ -566,6 +570,86 @@ void readshotSensor(){
 
   // After reading the results reset the interrupt to be able to take another measurement
   shotSensor.ClearInterrupt();
+}
+
+void init_spiffs(){
+        // Initialize SPIFFS
+  if(!SPIFFS.begin()){
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  } else {
+    Serial.println("Spiffs Loaded");
+  }
+ 
+}
+
+void init_wifi(){
+  //start the wifi manager
+  wm.setTitle(project_name);
+  wm.setCustomHeadElement("<style>h1:first-of-type { color: rgba(0,0,0,0);} h3:first-of-type {color: red;} </style>");
+  wm.setHostname(nospaces(project_name));
+  if (!wm.autoConnect(savedsettings.ssid_name.c_str(), savedsettings.ssid_password.c_str())){ // password protected ap) {
+     
+  } else {
+    Serial.println("Wifi Connected");
+    Serial.println("IP: " + WiFi.localIP().toString());
+  }
+
+}
+
+void init_AP(){
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(savedsettings.ssid_name,savedsettings.ssid_password);
+  
+
+}
+
+void init_pages(){
+  server.on("/epwc.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/epwc.css", "text/css");
+  });
+
+  server.on("/common.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/common.js");
+  });
+
+    server.on("/menu.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/menu.png", "menu/png");
+  });
+
+  server.on("/epwc.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/epwc.css", "text/css");
+  });
+
+  server.on("/common.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/common.js");
+  });
+
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/index.html");
+  });
+   server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest *request){
+     request->send(SPIFFS, "/index.html");
+  });
+
+  server.on("/update.html", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/update.html");
+  });
+
+  server.on("/settings.html", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/settings.html");
+  });
+
+  server.on("/favicon.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/favicon.png", "image/png");
+  });
+
+  server.on("/logo.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/logo.png", "image/png");
+  });
+
+  
 }
 
 
@@ -598,6 +682,34 @@ void setup() {
   // delay(4000);
   initPreferences();
   getPreferences();
+  init_spiffs();
+
+  Serial.println(savedsettings.wifiMode);
+
+  if (savedsettings.wifiMode == 1){
+    Serial.println("Connecting...");
+    init_wifi();
+    if (!MDNS.begin("SmartLoader")) {
+      Serial.println("Error setting up MDNS responder!");
+    } else {
+      Serial.println("mDNS responder started");
+    }
+    server.begin();
+    Serial.println("TCP server started");
+    MDNS.addService("http", "tcp", 80);
+    init_pages();
+  } 
+  else if (savedsettings.wifiMode == 2){
+      // create an access point at 192.168.4.1
+    Serial.println("Creating Access Point...");
+    init_AP();
+    delay(1000);
+    server.begin();
+    Serial.println("TCP server started");
+    init_pages();
+    Serial.println("IP: " + WiFi.softAPIP().toString());
+    delay(3000);
+   }
 
   // Start LVGL
   lv_init();
@@ -631,8 +743,7 @@ void setup() {
 
   // set initial brightness from prefs
   int brightness = map(savedsettings.brightness, 0, 100, 50, 255); // Map, adjusting for 8-bit PWM
-      analogWrite(BACKLIGHT_PIN, brightness);
-
+  analogWrite(BACKLIGHT_PIN, brightness);
   updateDataDisplay();
 
 

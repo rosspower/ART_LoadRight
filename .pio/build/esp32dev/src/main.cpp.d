@@ -129,8 +129,6 @@
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash_counters.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
- C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
- C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  .pio/libdeps/esp32dev/lvgl/lvgl.h \
  .pio/libdeps/esp32dev/lvgl/lv_version.h \
  .pio/libdeps/esp32dev/lvgl/src/lv_init.h \
@@ -648,7 +646,7 @@
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/lv_cache_lru_rb.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/../lv_cache_private.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/../../lv_types.h \
- d:\documents\platformio\projects\art_loadright\.pio\libdeps\esp32dev\lvgl\src\osal\lv_os_private.h \
+ .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/../../../osal/lv_os_private.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/lv_cache_lru_ll.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/class/lv_cache_sc_da.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/core/../draw/../misc/cache/instance/lv_cache_instance.h \
@@ -701,7 +699,7 @@
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/lv_qrcode_private.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/../../widgets/canvas/lv_canvas_private.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/../../widgets/canvas/../image/lv_image_private.h \
- d:\documents\platformio\projects\art_loadright\.pio\libdeps\esp32dev\lvgl\src\core\lv_obj_private.h \
+ .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/../../widgets/canvas/../image/../../core/lv_obj_private.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/../../widgets/canvas/../image/lv_image.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/../../widgets/canvas/lv_canvas.h \
  .pio/libdeps/esp32dev/lvgl/src/../src/libs/qrcode/lv_qrcode.h \
@@ -1027,7 +1025,6 @@
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/def.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/ip6_zone.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/include/apps/dhcpserver/dhcpserver.h \
- C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/err.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif_sta_list.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_smartconfig.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/wifi_provisioning/include/wifi_provisioning/manager.h \
@@ -1065,6 +1062,7 @@
  .pio/libdeps/esp32dev/AsyncTCP/src/AsyncTCP.h \
  .pio/libdeps/esp32dev/AsyncTCP/src/AsyncTCPVersion.h \
  C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/pbuf.h \
+ C:/Users/pcs/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/err.h \
  .pio/libdeps/esp32dev/ESPAsyncWebServer/src/literals.h \
  .pio/libdeps/esp32dev/ESPAsyncWebServer/src/AsyncEventSource.h \
  .pio/libdeps/esp32dev/ESPAsyncWebServer/src/AsyncWebSocket.h \
