@@ -5,7 +5,7 @@
 Preferences prefs;
 
 settings savedsettings;
-
+//needed for savedsettings
 String nospaces(String str){
   str.replace(" ", "");
     return str;
