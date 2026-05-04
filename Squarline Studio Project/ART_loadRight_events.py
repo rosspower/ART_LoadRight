@@ -74,3 +74,7 @@ def measureSEmptyLevelCallBack(event_struct):
 def measureSFullLevelCallBack(event_struct):
     return
 
+
+def wifiModeSelectCallBack(event_struct):
+    return
+

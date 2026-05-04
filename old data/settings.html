@@ -215,12 +215,7 @@ function getSettings(){
 
       const selectAlarmElement = document.getElementById('select_alarm_enabled');
       var alarmEnabled = settingsJson.alarmEnabled;
-      if (alarmEnabled = true){
-        selectAlarmElement.value = 0;
-      } else {
-        selectAlarmElement.value = 1;
-      }
-      
+      selectAlarmElement.value = alarmEnabled;
    
     }
   };

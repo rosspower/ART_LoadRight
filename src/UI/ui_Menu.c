@@ -10,6 +10,10 @@ lv_obj_t * ui_Return_Button = NULL;
 lv_obj_t * ui_Label2 = NULL;
 lv_obj_t * ui_Label13 = NULL;
 lv_obj_t * ui_Panel3 = NULL;
+lv_obj_t * ui_ipAddressLabel = NULL;
+lv_obj_t * ui_wifimode_container = NULL;
+lv_obj_t * ui_WiFi_Mode_Label = NULL;
+lv_obj_t * ui_wifiModeSelect = NULL;
 lv_obj_t * ui_CalibratePowderScreenButton = NULL;
 lv_obj_t * ui_Label1 = NULL;
 lv_obj_t * ui_CalibrateShotScreenButton = NULL;
@@ -47,6 +51,15 @@ void ui_event_Label2(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         _ui_screen_change(&ui_Main, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0, &ui_Main_screen_init);
+    }
+}
+
+void ui_event_wifiModeSelect(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_VALUE_CHANGED) {
+        wifiModeSelectCallBack(e);
     }
 }
 
@@ -189,11 +202,51 @@ void ui_Menu_screen_init(void)
     lv_obj_set_scroll_dir(ui_Panel3, LV_DIR_VER);
     lv_obj_set_style_bg_color(ui_Panel3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Panel3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_row(ui_Panel3, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_row(ui_Panel3, 25, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_column(ui_Panel3, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_set_style_bg_color(ui_Panel3, lv_color_hex(0x2DA041), LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Panel3, 255, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
+
+    ui_ipAddressLabel = lv_label_create(ui_Panel3);
+    lv_obj_set_width(ui_ipAddressLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_ipAddressLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_ipAddressLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_ipAddressLabel, "IP Address: None");
+
+    ui_wifimode_container = lv_obj_create(ui_Panel3);
+    lv_obj_remove_style_all(ui_wifimode_container);
+    lv_obj_set_height(ui_wifimode_container, 30);
+    lv_obj_set_width(ui_wifimode_container, lv_pct(98));
+    lv_obj_set_x(ui_wifimode_container, 1);
+    lv_obj_set_y(ui_wifimode_container, -97);
+    lv_obj_set_align(ui_wifimode_container, LV_ALIGN_CENTER);
+    lv_obj_set_flex_flow(ui_wifimode_container, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui_wifimode_container, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_wifimode_container, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_WiFi_Mode_Label = lv_label_create(ui_wifimode_container);
+    lv_obj_set_width(ui_WiFi_Mode_Label, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_WiFi_Mode_Label, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_WiFi_Mode_Label, -51);
+    lv_obj_set_y(ui_WiFi_Mode_Label, 0);
+    lv_obj_set_align(ui_WiFi_Mode_Label, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_WiFi_Mode_Label, "WiFi");
+    lv_obj_set_style_text_font(ui_WiFi_Mode_Label, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_wifiModeSelect = lv_dropdown_create(ui_wifimode_container);
+    lv_dropdown_set_options(ui_wifiModeSelect, "None\nConnected\nAccess Point");
+    lv_obj_set_width(ui_wifiModeSelect, 130);
+    lv_obj_set_height(ui_wifiModeSelect, 30);
+    lv_obj_set_x(ui_wifiModeSelect, 23);
+    lv_obj_set_y(ui_wifiModeSelect, 5);
+    lv_obj_set_align(ui_wifiModeSelect, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_wifiModeSelect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_set_style_bg_color(ui_wifiModeSelect, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_wifiModeSelect, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_wifiModeSelect, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_wifiModeSelect, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_wifiModeSelect, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_CalibratePowderScreenButton = lv_button_create(ui_Panel3);
     lv_obj_set_height(ui_CalibratePowderScreenButton, 30);
@@ -238,12 +291,12 @@ void ui_Menu_screen_init(void)
     ui_Container10 = lv_obj_create(ui_Panel3);
     lv_obj_remove_style_all(ui_Container10);
     lv_obj_set_height(ui_Container10, 20);
-    lv_obj_set_width(ui_Container10, lv_pct(100));
+    lv_obj_set_width(ui_Container10, lv_pct(130));
     lv_obj_set_x(ui_Container10, 1);
     lv_obj_set_y(ui_Container10, -97);
     lv_obj_set_align(ui_Container10, LV_ALIGN_CENTER);
     lv_obj_set_flex_flow(ui_Container10, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(ui_Container10, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_align(ui_Container10, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_remove_flag(ui_Container10, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     ui_Label26 = lv_label_create(ui_Container10);
@@ -255,12 +308,14 @@ void ui_Menu_screen_init(void)
     lv_label_set_text(ui_Label26, "Brightness");
     lv_obj_set_style_text_font(ui_Label26, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_brightnessSlider = lv_slider_create(ui_Panel3);
+    ui_brightnessSlider = lv_slider_create(ui_Container10);
     lv_slider_set_value(ui_brightnessSlider, 0, LV_ANIM_OFF);
     if(lv_slider_get_mode(ui_brightnessSlider) == LV_SLIDER_MODE_RANGE) lv_slider_set_start_value(ui_brightnessSlider, 0,
                                                                                                       LV_ANIM_OFF);
-    lv_obj_set_width(ui_brightnessSlider, 150);
+    lv_obj_set_width(ui_brightnessSlider, 81);
     lv_obj_set_height(ui_brightnessSlider, 10);
+    lv_obj_set_x(ui_brightnessSlider, -24);
+    lv_obj_set_y(ui_brightnessSlider, -2);
     lv_obj_set_align(ui_brightnessSlider, LV_ALIGN_CENTER);
 
     //Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
@@ -388,6 +443,7 @@ void ui_Menu_screen_init(void)
 
     lv_obj_add_event_cb(ui_Label2, ui_event_Label2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Return_Button, ui_event_Return_Button, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_wifiModeSelect, ui_event_wifiModeSelect, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_CalibratePowderScreenButton, ui_event_CalibratePowderScreenButton, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_CalibrateShotScreenButton, ui_event_CalibrateShotScreenButton, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_brightnessSlider, ui_event_brightnessSlider, LV_EVENT_ALL, NULL);
@@ -409,6 +465,10 @@ void ui_Menu_screen_destroy(void)
     ui_Label2 = NULL;
     ui_Label13 = NULL;
     ui_Panel3 = NULL;
+    ui_ipAddressLabel = NULL;
+    ui_wifimode_container = NULL;
+    ui_WiFi_Mode_Label = NULL;
+    ui_wifiModeSelect = NULL;
     ui_CalibratePowderScreenButton = NULL;
     ui_Label1 = NULL;
     ui_CalibrateShotScreenButton = NULL;

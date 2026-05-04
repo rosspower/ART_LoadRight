@@ -306,7 +306,7 @@ void ui_Main_screen_init(void)
     lv_obj_set_style_text_opa(ui_Container2, 255, LV_PART_MAIN | LV_STATE_PRESSED);
 
     ui_Menu_Button = lv_button_create(ui_Container2);
-    lv_obj_set_width(ui_Menu_Button, 65);
+    lv_obj_set_width(ui_Menu_Button, 70);
     lv_obj_set_height(ui_Menu_Button, 40);
     lv_obj_set_x(ui_Menu_Button, -31);
     lv_obj_set_y(ui_Menu_Button, -6);
@@ -343,7 +343,7 @@ void ui_Main_screen_init(void)
     lv_obj_set_width(ui_Label5, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label5, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_align(ui_Label5, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label5, "Menu");
+    lv_label_set_text(ui_Label5, "Settings");
     lv_obj_set_style_text_color(ui_Label5, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Label5, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 

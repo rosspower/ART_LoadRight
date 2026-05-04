@@ -14,6 +14,7 @@ void update_slider_color(lv_event_t * e);
 void update_shot_slider_color(lv_event_t * e);
 void resetCounterCallBack(lv_event_t * e);
 void alarmImageClickCallBack(lv_event_t * e);
+void wifiModeSelectCallBack(lv_event_t * e);
 void brightnessSliderCallBack(lv_event_t * e);
 void toggleAlertCallBack(lv_event_t * e);
 void toggleShowDistanceCallBack(lv_event_t * e);

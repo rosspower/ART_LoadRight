@@ -27,10 +27,9 @@
 #include <Preferences.h>
 #include <ESPmDNS.h>
 #include <ESP32httpUpdate.h>
-
 #include "ESP32S3Buzzer.h"
-
 #include "VL53L1X_ULD.h"
+#include <ArduinoJson.h>
 
 
 
@@ -43,6 +42,9 @@ VL53L1X_ULD shotSensor;
 
 #define powderSensor_XSHUT 17
 #define shotSensor_I2C_ADDRESS 0x55
+
+// Allocate the JSON document
+JsonDocument doc;
 
 
 
@@ -93,10 +95,10 @@ int minDist = 20;  // The closest reading to the sensor in mm: 100% full
 int maxDist = 120; // The furthest reading from the sensor in mm: 0% full
 int lastPercent = 0;
 int newPercent;
-int alertPPercent = 20;
-int warnPPercent = alertPPercent  * 1.5;
-int alertSPercent = 20;
-int warnSPercent = alertSPercent  * 1.5;
+int alertPPercent = 0;
+int warnPPercent = 0;
+int alertSPercent = 0;
+int warnSPercent = 0;
 int grainsPerMM = 12;
 int grainsLeft = 0;
 int grainsAdded = 50; // For measuring grains per mm
@@ -245,6 +247,8 @@ void updateDisplayValues(){
   setUILabelText(ui_maxSDist, String(savedsettings.maxSDist));
   setUILabelText(ui_minSDist, String(savedsettings.minSDist));
 
+  lv_dropdown_set_selected(ui_wifiModeSelect, savedsettings.wifiMode);
+
   lv_slider_set_value(ui_brightnessSlider, savedsettings.brightness, LV_ANIM_OFF);
 
 }
@@ -270,7 +274,8 @@ void updateShotRTDisplay(){
   if (sValue <= alertSPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
       setUiElementState(ui_alarmImage1, 1);
-      playBuzzer();  
+      playBuzzer();
+      
     } else {
       setUiElementState(ui_alarmImage1, 0);  
     }
@@ -283,6 +288,7 @@ void updateShotRTDisplay(){
   } else if(sValue <= warnSPercent){
     if (savedsettings.alarmEnabled == true){
       setUiElementState(ui_alarmImage1, 0);
+      
     }  
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
     setUiTextColor(ui_ShotValueLabel, "warn");
@@ -296,6 +302,7 @@ void updateShotRTDisplay(){
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0x127612), LV_PART_INDICATOR);
     setUiTextColor(ui_ShotValueLabel, "norm");
     setUiTextColor(ui_Shot_Label, "norm");
+   
     //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
   }
 }
@@ -323,7 +330,8 @@ void updatePowderRTDisplay(){
   if (pValue <= alertPPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
       setUiElementState(ui_alarmImage, 1); 
-      playBuzzer(); 
+      playBuzzer();
+      isAlarmed = true; 
     } else {
       setUiElementState(ui_alarmImage, 0);  
     }
@@ -354,7 +362,21 @@ void updatePowderRTDisplay(){
 
 }
 
+void updateAlerts(){
+  alertPPercent = savedsettings.alertPPercent;
+  warnPPercent = alertPPercent  * 1.5;
+  alertSPercent = savedsettings.alertSPercent;
+  warnSPercent = alertSPercent  * 1.5;
+}
+
 void updateRealTimeDisplay(){
+  if((pValue <= alertPPercent) && (savedsettings.alarmEnabled == true)){
+    isAlarmed = true;
+  } else if ((sValue <= alertSPercent) && (hasShotSensor == true)){
+    isAlarmed = true;
+  } else {
+    isAlarmed = false;
+  }
   updatePowderRTDisplay();
   if((savedsettings.showShot == true) && (hasShotSensor))
   updateShotRTDisplay();
@@ -367,6 +389,7 @@ void updateRealTimeDisplay(){
 void updateDataDisplay(){
   storePreferences();
   getPreferences();
+  updateAlerts();
   updateDisplayValues();
   updateRealTimeDisplay();
 }
@@ -377,7 +400,46 @@ void reset_counter() {
   lv_obj_add_flag(ui_resetCounterPanel, LV_OBJ_FLAG_HIDDEN);    // Hide
 }
 
+void set_device_name(String setting){
+  savedsettings.device_name = setting;
+  storePreferences();
+}
+
+void set_device_desc(String setting){
+  savedsettings.device_desc = setting;
+  storePreferences();
+}
+
+void setAlarmEnabled(int input){
+  savedsettings.alarmEnabled = input;
+  storePreferences();
+}
+
+void set_mdns_name(String setting){
+  savedsettings.mdns_name = setting;
+  storePreferences();
+  ESP.restart();
+}
+
+void setWifiMode(int mode){
+  savedsettings.wifiMode = mode;
+  storePreferences();
+  delay(500);
+  ESP.restart();
+}
+
 extern "C" {
+
+   void wifiModeSelectCallBack(lv_event_t * e) {
+    Serial.println(lv_dropdown_get_selected(ui_wifiModeSelect));
+    savedsettings.wifiMode =  lv_dropdown_get_selected(ui_wifiModeSelect);
+    setWifiMode(savedsettings.wifiMode);
+   
+    
+    
+  }
+
+
   void measurePEmptyLevelCallBack(lv_event_t * e) {
     //set powder max level
     savedsettings.maxPDist = rawPValue;
@@ -414,6 +476,7 @@ extern "C" {
      clearAllPreferences();
      initPreferences();
      getPreferences();
+     updateAlerts();
      updateDisplayValues();
     }
 
@@ -528,12 +591,51 @@ void sensorSetup(){
     hasPowderSensor = true;
     powderSensor.StartRanging();
   }
- 
-
-  
- 
 
 }
+
+String getRSSI(){
+  return String(WiFi.RSSI());
+}
+
+String getPercents(){
+  doc["pValue"] = pValue;
+  doc["sValue"] = sValue;
+  doc["isAlarmSilenced"] = isAlarmSilenced;
+  doc["isAlarmed"] = isAlarmed;
+  doc["alarmDelay"] = alarmDelay;
+  String returnString = "";
+  serializeJson(doc, returnString);
+  return returnString;
+}
+
+String getSettings() {
+  getPreferences();
+  updateAlerts();
+  //testSD(); must put back
+  doc["device_name"] = String(savedsettings.device_name);
+  doc["device_desc"] = String(savedsettings.device_desc);
+  doc["mdns_name"] = String(savedsettings.mdns_name);
+  doc["wifi_mode"] = savedsettings.wifiMode;
+  doc["ip_address"] = WiFi.localIP().toString();
+  doc["alarmEnabled"] = savedsettings.alarmEnabled;
+  doc["minDist_1"] = savedsettings.minPDist;
+  doc["minDist_2"] = savedsettings.minSDist;
+  doc["maxDist_1"] = savedsettings.maxPDist;
+  doc["maxDist_2"] = savedsettings.maxSDist;
+  doc["alertPercent_1"] = savedsettings.alertPPercent;
+  doc["alertPercent_2"] = savedsettings.alertSPercent;
+  //doc["grainsPerMM"] = savedsettings.grainsPerMM;
+  doc["isAlarmSilenced"] = isAlarmSilenced;
+  doc["isAlarmed"] = isAlarmed;
+  doc["alarmDelay"] = alarmDelay;
+  doc["dualMode"] = hasShotSensor;
+  
+ 
+  String returnString = "";
+  serializeJson(doc, returnString);
+  return returnString;
+ }
 
 void readPowderSensor(){
   // Checking if data is available. This can also be done through the hardware interrupt
@@ -593,6 +695,7 @@ void init_wifi(){
   } else {
     Serial.println("Wifi Connected");
     Serial.println("IP: " + WiFi.localIP().toString());
+    setUILabelText(ui_ipAddressLabel, "IP Address: " + WiFi.localIP().toString());
   }
 
 }
@@ -600,9 +703,10 @@ void init_wifi(){
 void init_AP(){
   WiFi.mode(WIFI_AP);
   WiFi.softAP(savedsettings.ssid_name,savedsettings.ssid_password);
-  
-
+  setUILabelText(ui_ipAddressLabel, "IP Address: 192.168.4.1" );
 }
+
+
 
 void init_pages(){
   server.on("/epwc.css", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -613,9 +717,9 @@ void init_pages(){
     request->send(SPIFFS, "/common.js");
   });
 
-    server.on("/menu.png", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/menu.png", "menu/png");
-  });
+  //   server.on("/menu.png", HTTP_GET, [](AsyncWebServerRequest *request){
+  //   request->send(SPIFFS, "/menu.png", "menu/png");
+  // });
 
   server.on("/epwc.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/epwc.css", "text/css");
@@ -649,7 +753,83 @@ void init_pages(){
     request->send(SPIFFS, "/logo.png", "image/png");
   });
 
+  server.on("/home.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/home.png", "image/png");
+  });
+
+  server.on("/gear.png", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/gear.png", "image/png");
+  });
+
+  server.on("/get_values", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", getPercents().c_str());
+  });
+
+  server.on("/get_settings", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "application/json", getSettings());
+  });
+
+  server.on("/rssi", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", getRSSI().c_str());
+  });
+
+  server.on("/alarmSilence", HTTP_GET, [](AsyncWebServerRequest *request){
+    isAlarmSilenced = true;
+    Serial.println("alarm silenced");
+    // setUiElementState(ui_alarmImage, 0);
+    lastAlarmSilenced = millis();
+    request->send(200, "text/plain", "OK");
+  });
+
   
+
+  server.on("/set_settings", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    String inputMessage;
+    String inputParam;
+    Serial.println("got settings set!!!!!!!!!!!!");
+    
+   
+    if (request->hasParam("device_name")) {
+      inputMessage = request->getParam("device_name")->value();
+      set_device_name(inputMessage);
+    }
+
+    if (request->hasParam("device_desc")) {
+      inputMessage = request->getParam("device_desc")->value();
+      set_device_desc(inputMessage);
+    }
+
+    if (request->hasParam("alertPercent_1")) {
+      inputMessage = request->getParam("alertPercent_1")->value();
+      savedsettings.alertPPercent = inputMessage.toInt();
+      storePreferences();
+    }
+
+    if (request->hasParam("alertPercent_2")) {
+      inputMessage = request->getParam("alertPercent_2")->value();
+      savedsettings.alertSPercent = inputMessage.toInt();
+      storePreferences();
+    }
+
+    if (request->hasParam("mdns_name")) {
+      inputMessage = request->getParam("mdns_name")->value();
+      set_mdns_name(inputMessage.c_str());
+    }
+
+    if (request->hasParam("wifi_mode")) {
+      inputMessage = request->getParam("wifi_mode")->value();
+      setWifiMode(inputMessage.toInt());
+    }
+
+     if (request->hasParam("alarmEnabled")) {
+      inputMessage = request->getParam("alarmEnabled")->value();
+      setAlarmEnabled(inputMessage.toInt());
+    }
+    request->redirect("/index.html");
+    getPreferences();
+    updateAlerts();
+    
+  });
 }
 
 
@@ -682,36 +862,10 @@ void setup() {
   // delay(4000);
   initPreferences();
   getPreferences();
+  updateAlerts();
   init_spiffs();
 
-  Serial.println(savedsettings.wifiMode);
-
-  if (savedsettings.wifiMode == 1){
-    Serial.println("Connecting...");
-    init_wifi();
-    if (!MDNS.begin("SmartLoader")) {
-      Serial.println("Error setting up MDNS responder!");
-    } else {
-      Serial.println("mDNS responder started");
-    }
-    server.begin();
-    Serial.println("TCP server started");
-    MDNS.addService("http", "tcp", 80);
-    init_pages();
-  } 
-  else if (savedsettings.wifiMode == 2){
-      // create an access point at 192.168.4.1
-    Serial.println("Creating Access Point...");
-    init_AP();
-    delay(1000);
-    server.begin();
-    Serial.println("TCP server started");
-    init_pages();
-    Serial.println("IP: " + WiFi.softAPIP().toString());
-    delay(3000);
-   }
-
-  // Start LVGL
+    // Start LVGL
   lv_init();
   // Register print function for debugging
   lv_log_register_print_cb(log_print);
@@ -745,6 +899,36 @@ void setup() {
   int brightness = map(savedsettings.brightness, 0, 100, 50, 255); // Map, adjusting for 8-bit PWM
   analogWrite(BACKLIGHT_PIN, brightness);
   updateDataDisplay();
+
+  
+  setUILabelText(ui_ipAddressLabel, "IP Address: None");
+
+  if (savedsettings.wifiMode == 1){
+    Serial.println("Connecting...");
+    init_wifi();
+    if (!MDNS.begin("SmartLoader")) {
+      Serial.println("Error setting up MDNS responder!");
+    } else {
+      Serial.println("mDNS responder started");
+    }
+    server.begin();
+    Serial.println("TCP server started");
+    MDNS.addService("http", "tcp", 80);
+    init_pages();
+  } 
+  else if (savedsettings.wifiMode == 2){
+      // create an access point at 192.168.4.1
+    Serial.println("Creating Access Point...");
+    init_AP();
+    //delay(1000);
+    server.begin();
+    Serial.println("TCP server started");
+    init_pages();
+    Serial.println("IP: " + WiFi.softAPIP().toString());
+    //delay(3000);
+   }
+
+
 
 
 

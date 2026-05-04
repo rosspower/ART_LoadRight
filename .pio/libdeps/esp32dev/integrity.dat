@@ -1,8 +1,9 @@
-https://github.com/hammikb/ESP32-Buzzer.git
-lvgl/lvgl@^9.5.0
-tzapu/WiFiManager@^2.0.17
 suculent/ESP32httpUpdate@^2.1.145
+tzapu/WiFiManager@^2.0.17
 https://github.com/rneurink/VL53L1X_ULD.git
-https://github.com/PaulStoffregen/XPT2046_Touchscreen.git
 https://github.com/me-no-dev/ESPAsyncWebServer.git
 bodmer/TFT_eSPI@^2.5.43
+bblanchon/ArduinoJson@^7.4.2
+https://github.com/hammikb/ESP32-Buzzer.git
+lvgl/lvgl@^9.5.0
+https://github.com/PaulStoffregen/XPT2046_Touchscreen.git

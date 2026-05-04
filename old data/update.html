@@ -1,0 +1,75 @@
+<!DOCTYPE HTML><html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SwimDrive SmartControl - Home</title>
+    <link rel="icon" href="./logo.png" sizes="192x192" />
+    <link rel="stylesheet" type="text/css" href="epwc.css">
+    <script src="/common.js"></script>
+    
+
+    <style>
+    </style>
+  </head>
+
+
+
+<body>
+    <div id = "header" class = "header">
+        <table style="width:100%" >
+          <tr>
+            <td style="width:33% ">
+              <span style = "margin-left: 10px;">
+                <!-- <img src="logo.png" alt="ePropelled" height="40"> -->
+              </span>
+    
+            </td>
+            <td style="width:33%; text-align: center;">
+              <span id="device-name-label" style="font-weight: bolder; font-size: larger; color:white;"> Firmware/File System Update</span>
+            </td>
+            <td style="width:33%">
+              <div style = "float: right; margin-right: 10px">
+                <div id="rssi-graphic" class="signal-icon medium">
+                  <div class="signal-bar"></div>
+                  <div class="signal-bar"></div>
+                  <div class="signal-bar"></div>
+                  <div class="signal-bar"></div>
+                </div>    
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+     
+    
+      <div class="flex-container">
+        <form method='POST' action='/doUpdate' enctype='multipart/form-data'>
+            <input type='file' name='update'>
+            <input class="styled bspacer first-col-button " style= "margin-top: 10px;" type='submit' value='Update'>
+        </form>
+       
+      </div>
+    
+      <div class= "bottom" style="padding-left: 8%;">
+       
+          <div class="nav-group">
+            
+          </div>
+          <div class="btn-group">
+            
+        </div>
+      </div>
+</body>
+
+  
+
+  
+  
+
+
+  
+
+ 
+   
+    
+  
+

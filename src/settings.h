@@ -20,6 +20,11 @@ struct settings {
   int wifiMode;
  };
 
+
+
+
+
+
 #define project_name "AimRight SmartLoader" 
 
 extern settings savedsettings;
@@ -28,3 +33,4 @@ void initPreferences();
 void storePreferences();
 void getPreferences();
 String nospaces(String str);
+

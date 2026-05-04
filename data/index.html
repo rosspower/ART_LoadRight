@@ -1,100 +1,424 @@
-<!DOCTYPE HTML>
-<html>
-<head>
- <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ePropelled UDCD</title>
-    <link rel="icon" href="/favicon.png" sizes="192x192" />
+<!DOCTYPE HTML><html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ART Reloading Monitor</title>
+    <link rel="icon" href="./logo.png" sizes="192x192" />
     <link rel="stylesheet" type="text/css" href="epwc.css">
-     <script type="application/javascript" src="/common.js"></script>
-  <style>
-  </style>
-</head>
-<body class="app-background">
-    <div class="mobile-container">
-      <div class="topnav">
-        <a href="/index.html" class="active">
-          <table style="width:100%">
-            <tr>
-              <td style="width:12% ">
-                <div id="main-img"></div>
-              </td>
-              <td style="width:33%; text-align: center;">
-                <span id="device-name-label" style="font-weight: bolder; font-size: larger; color:black"></span>
-              </td>
-              <td style="width:10%"></td>
-            </tr>
-          </table>
-        </a>
-        <div id="myLinks">
-          <a href="/index.html">Device Info</a>
-          <a href="/rtdm.html">Real Time Monitoring</a>
-          <a href="/parameters.html">Device Parameters</a>
-          <a href="/settings.html">UDCD Setting</a>
-          <a href="/update.html">Update UDCD Firmware</a>
-          <a href="https://epropelled.com/" target="_blank">About</a>
-        </div>
-        <a href="javascript:void(0);" class="icon" id="menuicon" title="Menu" onclick="menuFunction()">
-          <img src="menu.png" alt="ePropelled" height="40">
-        </a>
-      </div>
-    </div>
+    <script src="/common.js"></script>
+ 
+  
+    <style>
+      .equalDivide tr td { width:100%; }
+      .splitDivide tr td { width:50%; }
+
+      .vertical-progress-container {
+  width: 50px; /* Adjust width as needed */
+  height: 300px; /* Adjust height as needed */
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden; /* Ensures the fill stays within the container */
+
+}
+
+.outlined-label {
+  outline: 2px solid black; /* Sets a 2px solid blue outline */
+  outline-offset: 5px;   /* Adds a 5px offset between the label and the outline */
+}
+.auto_margin{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.vertical-progress-fill {
+  background-color: #4CAF50; /* Green fill color */
+  width: 100%;
+  position: absolute;
+  bottom: 0; /* Starts filling from the bottom */
+  transition: height 0.5s ease; /* Smooth animation for height changes */
+}
+
+.progress-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #333;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+}
+.center-cell {
+    text-align: center;
+}
+
+
+
+    </style>
+  </head>
+<body onload="loader()" class="app-background">
+
+  <div id = "header" class = "header">
+    <table style="width:100%" >
+      <tr>
+        <td style="width:10% ">
+          <span style = "margin-left: 10px; margin-top: 10px">
+            <img src="logo.png" alt="ePropelled" height="40">
+          </span>
+
+        </td>
+        <td style="width:33%; text-align: center;">
+          <span id="device-name-label" style="font-weight: bolder; font-size: larger; color:white"></span>
+        </td>
+        <td style="width:10%">
+          <div style = "float: right; margin-right: 10px">
+            <div id="rssi-graphic" class="signal-icon medium">
+              <div class="signal-bar"></div>
+              <div class="signal-bar"></div>
+              <div class="signal-bar"></div>
+              <div class="signal-bar"></div>
+            </div>    
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>
-  <div class="container">
-    <div class="row">
-      <div class="col-12 col-md-6 ">
-        <fieldset>
-          <legend>Device Info:</legend>
-          <input class="action_button" id="read_params_button" type="button" value="Read Device Info"
-            style="margin-top: 5px;" onclick="read_info()" />
-          <table id="device_info_table" style="border-spacing: 0 10px;">
-          </table>
-      </fieldset>
-      </div>
-    </div>
-  </div>
+  <fieldset class=" white-back">
+   
+    <table style="width:100%;">
+      <tr>
+       <td class="center-cell">
+          <div id= "powderBar" class="vertical-progress-container auto_margin">
+            <div  class="vertical-progress-fill" style="height: 75%;"></div>
+            <span class="progress-label">75%</span>
+          </div>
+        </td>
+        <td id="shotbar_td" class="center-cell">
+           <div id="shotBar"  class="vertical-progress-container auto_margin">
+            <div class="vertical-progress-fill" style="height: 75%;"></div>
+            <span class="progress-label">75%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td id="powderLabel" class="center-cell" style = "font-weight: bolder; font-size: x-large;">
+          Powder Level
+        </td>
+        <td id="shotLabel"class="center-cell" style = "font-weight: bolder; font-size: x-large;">
+          Shot Level
+        </td>
+        
+      </tr>
+
+    </table>
+  </fieldset>
+
+  <fieldset  style="min-height: 61px;">
+    <table class = "equalDivide" style = "text-align:center; margin:0 auto; width: 100%" >
+     <tr>
+       <td>
+        <input id="silenceAlarmButton" class="styled bspacer first-col-button " type="button" value="Suppress Alarm" style="margin-top: 5px; font-size:large;" onclick="silenceAlarm()" />
+       </td>
+       <td>
+          <td ><label id = "suppressTimeLeft"  style = "font-weight: bolder; display: none;">Suppress Time Left</label></td>
+       </td>
+      
+      </tr>
+      
+    
+  </table>
+  </fieldset>
 
 
-
-
-
-</body>
-<script>
-
-  var settingsJson;
-  var infoJson;
 
   
 
+  <div class= "bottom" >
+   
+      <div class="nav-group">
+          <button id="nav_home" style= "margin-left: 5px;"></button>
+          <button id="nav_settings" style= "position: absolute;right: 5px;"></button>
+        
+      </div>
+      <div class="btn-group">
+        <button  style= "margin-left: 5px;" onclick="window.location = './index.html';">
+          <img src="./home.png" alt="home icon" width="20" height="20"/>
+          <br/>
+          Home
+        </button>
+        <button style= "position: absolute;right: 5px;" onclick="stopIntervals(); window.location = './settings.html';">
+          <img src="./gear.png" alt="gear icon" width="20" height="20"/>
+          <br/>
+          Settings</button>
+
+    </div>
+  </div>
+   <br>
+  <br>
+
+   <br>
+  <br>
+
+   <br>
+  <br>
+  <br>
+
+  <style>
+    .results th {
+      border-bottom: 1px solid black;
+      border-collapse: collapse;
+    }
+    </style>
+   
 
 
-  window.addEventListener("load", (event) => {
-    //getSettings();
-    //getInfo();
-  });
+  
 
-function getInfo(){
+  
+  
+
+
+  
+
+ 
+   
+    
+  
+</body>
+<script>
+
+
+var alertPercent_1 = 20;
+var alertPercent_2 = 20;
+var alarmEnabled = 0;
+var alarmSilenced = false;
+var timerA;
+var settingsJson;
+var dualMode = false;
+
+function resetAlarm(){
+   const btn = document.getElementById("silenceAlarmButton");
+   btn.value = "Suppress Alarm";
+   alarmSilenced = false;
+  
+}
+
+function silenceAlarm(){
+
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      infoJson = JSON.parse(this.responseText);
-      console.log(infoJson);
-      build_info_fields();
-      
-    }
+  if (this.readyState == 4 && this.status == 200) {
+   }
   };
-  xhttp.open("GET", "/get_device_info", true);
+  xhttp.open("GET", "/alarmSilence", true);
   xhttp.send();
+  // alarmSilenced = true;
+  // const btn = document.getElementById("silenceAlarmButton");
+  // btn.value = 'Suppressed';
+  
+  // timerA = new timer(function() {
+  //   // Do something after 5 seconds
+  //    resetAlarm();
+  // }, 5 * 60 * 1000);
+}
 
+
+
+
+
+switch(window.location.protocol) {
+   case 'http:':
+   board_connected = true;
+   case 'https:':
+     //remote file over http or https
+     board_connected = true;
+     break;
+   case 'file:':
+     //local file
+     board_connected = false;
+     break;
+   default: 
+     //some other protocol
+     board_connected = false;
 }  
+
+
+
+function get_date(){
+  let ms = new Date(Date.now());
+  day = ms.getDate();
+  month = ms.getMonth() + 1;
+  year = ms.getFullYear();
+  return String( month) + "/" + String(day) + "/" + String(year);
+
+}
+
+
+
+
+
+
+
+
+function updateProgressBar(percentage, barID, backColor) {
+    const parentElement = document.getElementById(barID);
+    const childElements = parentElement.children;
+    // You can iterate through the collection
+    const fill = childElements[0];
+  // const fill = document.querySelector('#' + barID + '.first');
+    const label = childElements[1]
+  // const label = document.querySelector('#' + barID + '.progress-label');
+  
+  fill.style.height = percentage + '%';
+  fill.style.backgroundColor  = backColor;
+  label.innerHTML = percentage + '%';
+}
+
+// Example usage:
+// updateProgressBar(75); // Sets progress to 75%
+
+
+function updateBars(){
+  var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      valuesJson = JSON.parse(this.responseText);
+      const btn = document.getElementById("silenceAlarmButton");
+      if ((alarmEnabled == true) && (valuesJson.isAlarmed == true) && (valuesJson.isAlarmSilenced == false)){
+        btn.hidden = false;
+      } else {
+        btn.hidden = true;
+      }
+        
+          let p1 = valuesJson.pValue;
+                   
+          if (p1 < 0) p1 = 0;
+          if (p1 < alertPercent_1) {
+            updateProgressBar(p1, 'powderBar', 'red'); // Sets progress to 75%
+            const label = document.getElementById("powderLabel");
+            label.style.color = "red";
+            if (alarmEnabled == 1 && alarmSilenced == false){
+              //background: repeating-linear-gradient( -45deg, red 0px, rgb(192, 187, 187) 120px);
+              // if(beep_audio.currentTime == 0 || beep_audio.ended) {
+              //   beep_audio.play();
+              // }
+            }
+          } else {
+            updateProgressBar(p1, 'powderBar', '#4CAF50'); // Sets progress to 75%
+            const label = document.getElementById("powderLabel");
+            label.style.color = "black";
+            // To stop the audio and reset its playhead to the beginning
+            // beep_audio.pause();
+            // beep_audio.currentTime = 0;
+            resetAlarm();
+           }
+
+          if(dualMode == true) {
+            let p2 = valuesJson.sValue;
+            if (p2 < 0) p2 = 0;
+            if (p2 < alertPercent_2) {
+              updateProgressBar(p2, 'shotBar', 'red'); // Sets progress to 75%
+              const label = document.getElementById("shotLabel");
+              label.style.color = "red";
+              if (alarmEnabled == 1 && alarmSilenced == false){
+                //background: repeating-linear-gradient( -45deg, red 0px, rgb(192, 187, 187) 120px);
+                // if(beep_audio.currentTime == 0 || beep_audio.ended) {
+                //   beep_audio.play();
+                // }
+              }
+            } else {
+              updateProgressBar(p2, 'shotBar', '#4CAF50'); // Sets progress to 75%
+              const label = document.getElementById("shotLabel");
+              label.style.color = "black";
+              // To stop the audio and reset its playhead to the beginning
+              // beep_audio.pause();
+              // beep_audio.currentTime = 0;
+              resetAlarm();
+            }
+
+          }
+          
+           
+
+      }
+     };
+     xhttp.open("GET", "/get_values", true);
+     xhttp.send();
+
+}
+
+
+function getSuppressTimeLeft(){
+  suppresslabel = document.getElementById("suppressTimeLeft")
+  if (alarmSilenced == true){
+    suppresslabel.style.display = "block";
+    fullSecondsLeft = Math.round(timerA.getTimeLeft() / 1000);
+    minutesLeft = Math.floor(fullSecondsLeft / 60);
+    secondsLeft = fullSecondsLeft % 60;
+    suppresslabel.innerHTML = "Time Left: " + minutesLeft + ":" + secondsLeft;
+    
+    console.log(timerA.getTimeLeft() / 1000);
+  } else {
+    suppresslabel.style.display = "none";
+  }
+  
+}
+
+
+
+const fastInterval = setInterval(function ( ) {
+  updateBars();
+     
+  }, 500 ) ;
+
+  const slowInterval = setInterval(function ( ) {
+    getRssi();
+    getSettings();
+    getSuppressTimeLeft();
+   
+
+  }, 2000 ) ;
+
+  
+
+ 
+  function loader(){
+    getSettings();
+    nav_marker();
+    
+  }
+
 
   
 function getSettings(){
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
+ 
+
     if (this.readyState == 4 && this.status == 200) {
       settingsJson = JSON.parse(this.responseText);
-      console.log(settingsJson);
       document.getElementById("device-name-label").innerHTML = settingsJson.device_name;
+      alertPercent_1 = settingsJson.alertPercent_1;
+      alertPercent_2 = settingsJson.alertPercent_2;
+      alarmEnabled = settingsJson.alarmEnabled;
+      dualMode = settingsJson.dualMode;
+      pbar = document.getElementById("shotbar_td");
+      plabel = document.getElementById("shotLabel")
+      if(dualMode == true){
+        pbar.style.display = "block";
+        plabel.style.display = "block";
+      } else {
+        pbar.style.display = "none";
+        plabel.style.display = "none";
+      }
+      
+
+        
+      
+
+     
+
+   
     }
   };
   xhttp.open("GET", "/get_settings", true);
@@ -102,40 +426,88 @@ function getSettings(){
 
 }
 
-function read_info(){
-   var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    window.location.reload();
-   
-  };
-  xhttp.open("GET", "/read_info", true);
-  xhttp.send();
 
-}
 
-function build_info_fields(){
-  const params_table = document.getElementById("device_info_table"); 
-// <tr><td>Device Name:</td><td><input type="text" id="deviceName" readonly></td></tr>
-  for (let i = 0; i < infoJson.length; i++) {
-    const newRow = document.createElement("tr");
-    const cell1 = document.createElement("td");
-    const cell2 = document.createElement("td");
-    cell2.style.position = "relative";
-    const cell3 = document.createElement("td");
+ 
 
-    cell1.innerHTML = infoJson[i].label
-    cell2.innerHTML = "<input type='text' class='data-field' style = ' max-width: 150px;' value ='" + infoJson[i].value + "' id='data" + i + "' name = '" + infoJson[i].label + "' readonly >";
-    newRow.appendChild(cell1);
-    newRow.appendChild(cell2);
-    params_table.appendChild(newRow);
-  }
-  
-}
+//   function getSettings(){
+//     var xhttp = new XMLHttpRequest();
+//      xhttp.onreadystatechange = function() {
+//        if (this.readyState == 4 && this.status == 200) {
+//          settingsArray = this.responseText.split(",");
+//           //  console.log(settingsArray);
+//            rig_name = String(settingsArray[0])
+//            document.getElementById("device-name-label").innerHTML = String(settingsArray[0]);
+//            alertPercent_1 = settingsArray[8];
+//            alertPercent_2 = settingsArray[9];
+//            alarmEnabled = parseInt(settingsArray[12]);
+
+           
+
+//       }
+//      };
+//      xhttp.open("GET", "/get_settings", true);
+//      xhttp.send();
+// }
 
   function stopIntervals(){
     clearInterval(fastInterval);
     clearInterval(slowInterval);
   }
+
+ 
+
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+function timer(callback, delay) {
+    var id, started, remaining = delay, running
+
+    this.start = function() {
+        running = true
+        started = new Date()
+        id = setTimeout(callback, remaining)
+    }
+
+    this.pause = function() {
+        running = false
+        clearTimeout(id)
+        remaining -= new Date() - started
+    }
+
+    this.getTimeLeft = function() {
+        if (running) {
+            this.pause()
+            this.start()
+        }
+
+        return remaining
+    }
+
+    this.getStateRunning = function() {
+        return running
+    }
+
+    this.start()
+}
+
+
+
+
+
+function relDiff(a, b) {
+ return  100 * Math.abs( ( a - b ) / ( (a+b)/2 ) );
+}
+
+
+
 
 </script>
 </html>

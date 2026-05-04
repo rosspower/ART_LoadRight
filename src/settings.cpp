@@ -42,10 +42,10 @@ void initPreferences(){
         prefs.putString("mdns_name", "SmartLoader");
         prefs.putBool("alarmEnabled", true);
 
-        prefs.putInt("minPDist", 5);
-        prefs.putInt("maxPDist", 100);
-        prefs.putInt("minSDist", 5);
-        prefs.putInt("maxSDist", 100);
+        prefs.putInt("minPDist", 20);
+        prefs.putInt("maxPDist", 250);
+        prefs.putInt("minSDist", 20);
+        prefs.putInt("maxSDist", 250);
        
         prefs.putInt("alertPPercent", 20);
         prefs.putInt("alertSPercent", 20);
@@ -71,7 +71,7 @@ void storePreferences(){
     
     prefs.putString("ssid_name", savedsettings.ssid_name);
     prefs.putString("ssid_pass", savedsettings.ssid_password);
-    prefs.putInt("wifi_mode", savedsettings.wifiMode);
+    prefs.putInt("wifiMode", savedsettings.wifiMode);
     prefs.putBool("alarmEnabled", savedsettings.alarmEnabled);
     
     prefs.putInt("minPDist", savedsettings.minPDist);
@@ -110,6 +110,9 @@ void getPreferences(){
     
     savedsettings.alertPPercent = prefs.getInt("alertPPercent", 20);
     savedsettings.alertSPercent = prefs.getInt("alertSPercent", 20);
+
+
+
 
     savedsettings.currentRndCount = prefs.getInt("currentRndCount", 0);
     savedsettings.totalRndCnt = prefs.getInt("totalRndCnt", 0);
