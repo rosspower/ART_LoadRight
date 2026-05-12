@@ -8,6 +8,7 @@ SET(SOURCES ui_Main.c
     ui_events.c
     ui_img_btn_1_inact_png.c
     ui_img_btn_1_act_png.c
-    ui_img_alarm_png.c)
+    ui_img_alarm_png.c
+    fonts/ui_font_mono2.c)
 
 add_library(ui ${SOURCES})

@@ -23,8 +23,10 @@ void toggleShowShotCallBack(lv_event_t * e);
 void ClearAllSettingsCallback(lv_event_t * e);
 void measurePEmptyLevelCallBack(lv_event_t * e);
 void measurePFullLevelCallBack(lv_event_t * e);
+void alertPPercentCallBack(lv_event_t * e);
 void measureSEmptyLevelCallBack(lv_event_t * e);
 void measureSFullLevelCallBack(lv_event_t * e);
+void alertSPercentCallBack(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

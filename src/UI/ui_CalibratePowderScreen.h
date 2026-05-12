@@ -38,6 +38,15 @@ extern lv_obj_t * ui_Container9;
 extern lv_obj_t * ui_Label23;
 extern lv_obj_t * ui_minPDist;
 extern lv_obj_t * ui_Label24;
+extern lv_obj_t * ui_palert_container;
+extern lv_obj_t * ui_pAlert_Lavel;
+extern void ui_event_decAlertPButton(lv_event_t * e);
+extern lv_obj_t * ui_decAlertPButton;
+extern lv_obj_t * ui_Label11;
+extern lv_obj_t * ui_alertPPercent;
+extern void ui_event_incAlertPButton(lv_event_t * e);
+extern lv_obj_t * ui_incAlertPButton;
+extern lv_obj_t * ui_Label37;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

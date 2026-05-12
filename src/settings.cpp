@@ -37,7 +37,7 @@ void initPreferences(){
         prefs.putInt("wifiMode", 2); // 0:none, 1:connected, 2:standalone
 
         prefs.putBool("settings", true);
-        prefs.putString("device_name", "AImRight SmartLoader");
+        prefs.putString("device_name", "AImRight Technologies SmartLoader");
         prefs.putString("device_desc", "An Intelligent Reloading System");
         prefs.putString("mdns_name", "SmartLoader");
         prefs.putBool("alarmEnabled", true);

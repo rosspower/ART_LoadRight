@@ -1,0 +1,16 @@
+{
+  "codename": "mono2",
+  "ttf_path": "/assets/GeistMono-ExtraBold.ttf",
+  "bin_path": "/assets\\ui_font_mono2.bin",
+  "c_path": "/assets\\ui_font_mono2.c",
+  "cfg_path": "/assets\\ui_font_mono2.fcfg",
+  "size": 30,
+  "bpp": 1,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f"
+  ],
+  "symbols": "0123456789",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}

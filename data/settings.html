@@ -39,7 +39,7 @@
             <fieldset>
                 <legend>Device Identification:</legend>
                 <table>
-                    <tr><td>Name:</td><td><input type="text" id="deviceName" name="device_name" maxlength="25" title="Max length 25" onchange="addclasser(this)"></td></tr>
+                    <tr><td>Name:</td><td><input type="text" id="deviceName" name="device_name" maxlength="35" title="Max length 25" onchange="addclasser(this)"></td></tr>
                     <tr><td >Desc:</td><td><input type="text" id="deviceDesc" name="device_desc" maxlength="50" title="Max length 50" onchange="addclasser(this)"></td></tr>
                 </table>
             </fieldset>
@@ -215,10 +215,10 @@ function getSettings(){
 
       const selectAlarmElement = document.getElementById('select_alarm_enabled');
       var alarmEnabled = settingsJson.alarmEnabled;
-      if (alarmEnabled = true){
-        selectAlarmElement.value = 0;
+      if (alarmEnabled == true){
+        selectAlarmElement.selectedIndex = 0;
       } else {
-        selectAlarmElement.value = 1;
+        selectAlarmElement.selectedIndex = 1;
       }
       
    

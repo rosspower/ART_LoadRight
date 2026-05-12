@@ -1,7 +1,7 @@
 <!DOCTYPE HTML><html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ART Reloading Monitor</title>
+    <title>ART SmartLoader</title>
     <link rel="icon" href="./logo.png" sizes="192x192" />
     <link rel="stylesheet" type="text/css" href="epwc.css">
     <script src="/common.js"></script>
@@ -52,6 +52,23 @@
     text-align: center;
 }
 
+.counter {
+
+  color: white;
+  font-size: xxx-large;
+  font-weight: bolder;
+  text-align: right;
+  background: linear-gradient(0deg,rgba(10, 10, 10, 1) 40%, rgba(128, 128, 122, 1) 100%);
+  padding-left: 7px;
+  padding-right: 7px;
+  border: 2px solid white;
+  border-radius: 5px;
+  font-family:monospace, monospace;
+  display: inline-block;
+  min-width: 132px;
+
+}
+
 
 
     </style>
@@ -83,9 +100,9 @@
       </tr>
     </table>
   </div>
-  <fieldset class=" white-back">
+  <fieldset id="mainFieldSet" class=" white-back" >
    
-    <table style="width:100%;">
+    <table id ="mainTable" style="width:100%;">
       <tr>
        <td class="center-cell">
           <div id= "powderBar" class="vertical-progress-container auto_margin">
@@ -113,14 +130,15 @@
     </table>
   </fieldset>
 
-  <fieldset  style="min-height: 61px;">
+  <fieldset  style="min-height: 62px;">
     <table class = "equalDivide" style = "text-align:center; margin:0 auto; width: 100%" >
-     <tr>
-       <td>
+     <tr style="height: 60px;">
+       <td style="width: 50%;">
         <input id="silenceAlarmButton" class="styled bspacer first-col-button " type="button" value="Suppress Alarm" style="margin-top: 5px; font-size:large;" onclick="silenceAlarm()" />
        </td>
-       <td>
-          <td ><label id = "suppressTimeLeft"  style = "font-weight: bolder; display: none;">Suppress Time Left</label></td>
+       <td style="width: 50%; text-align: right;" >
+        <label id = "CounterValue"  class = "counter" onclick="restCounter()"></label>
+        <label id = "rnds" style = "font-size: xxx-large; font-weight:bolder; text-align: right;" onclick="restCounter()" >Rnds</label>
        </td>
       
       </tr>
@@ -195,6 +213,8 @@ var alarmSilenced = false;
 var timerA;
 var settingsJson;
 var dualMode = false;
+var showCounter = false;
+
 
 function resetAlarm(){
    const btn = document.getElementById("silenceAlarmButton");
@@ -212,14 +232,7 @@ function silenceAlarm(){
   };
   xhttp.open("GET", "/alarmSilence", true);
   xhttp.send();
-  // alarmSilenced = true;
-  // const btn = document.getElementById("silenceAlarmButton");
-  // btn.value = 'Suppressed';
-  
-  // timerA = new timer(function() {
-  //   // Do something after 5 seconds
-  //    resetAlarm();
-  // }, 5 * 60 * 1000);
+ 
 }
 
 
@@ -282,12 +295,26 @@ function updateBars(){
   var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
+      container = document.getElementById("mainFieldSet");
       valuesJson = JSON.parse(this.responseText);
       const btn = document.getElementById("silenceAlarmButton");
+      if (valuesJson.isAlarmed == true){
+        document.getElementById("mainFieldSet").style = 'background: linear-gradient(131deg,rgba(255, 0, 0, 1) 0%, rgba(102, 21, 29, 1) 100%);'      
+      } else {
+        document.getElementById("mainFieldSet").style = "";
+      }
       if ((alarmEnabled == true) && (valuesJson.isAlarmed == true) && (valuesJson.isAlarmSilenced == false)){
         btn.hidden = false;
       } else {
         btn.hidden = true;
+      }
+      if (showCounter == true){
+        document.getElementById("CounterValue").textContent  = padCounter(valuesJson.currentCounter);
+        document.getElementById("rnds").hidden = false;
+        document.getElementById("CounterValue").hidden = false;
+      } else {
+        document.getElementById("rnds").hidden = true;
+        document.getElementById("CounterValue").hidden = true;
       }
         
           let p1 = valuesJson.pValue;
@@ -297,19 +324,20 @@ function updateBars(){
             updateProgressBar(p1, 'powderBar', 'red'); // Sets progress to 75%
             const label = document.getElementById("powderLabel");
             label.style.color = "red";
+            
             if (alarmEnabled == 1 && alarmSilenced == false){
-              //background: repeating-linear-gradient( -45deg, red 0px, rgb(192, 187, 187) 120px);
-              // if(beep_audio.currentTime == 0 || beep_audio.ended) {
-              //   beep_audio.play();
-              // }
+              
             }
-          } else {
+          } else if (p1 < alertPercent_1 * 1.5){
+            updateProgressBar(p1, 'powderBar', 'darkorange'); // Sets progress to 75%
+            const label = document.getElementById("powderLabel");
+            label.style.color = "darkorange";
+            
+          }
+          else {
             updateProgressBar(p1, 'powderBar', '#4CAF50'); // Sets progress to 75%
             const label = document.getElementById("powderLabel");
             label.style.color = "black";
-            // To stop the audio and reset its playhead to the beginning
-            // beep_audio.pause();
-            // beep_audio.currentTime = 0;
             resetAlarm();
            }
 
@@ -321,10 +349,7 @@ function updateBars(){
               const label = document.getElementById("shotLabel");
               label.style.color = "red";
               if (alarmEnabled == 1 && alarmSilenced == false){
-                //background: repeating-linear-gradient( -45deg, red 0px, rgb(192, 187, 187) 120px);
-                // if(beep_audio.currentTime == 0 || beep_audio.ended) {
-                //   beep_audio.play();
-                // }
+              
               }
             } else {
               updateProgressBar(p2, 'shotBar', '#4CAF50'); // Sets progress to 75%
@@ -337,8 +362,6 @@ function updateBars(){
             }
 
           }
-          
-           
 
       }
      };
@@ -348,21 +371,7 @@ function updateBars(){
 }
 
 
-function getSuppressTimeLeft(){
-  suppresslabel = document.getElementById("suppressTimeLeft")
-  if (alarmSilenced == true){
-    suppresslabel.style.display = "block";
-    fullSecondsLeft = Math.round(timerA.getTimeLeft() / 1000);
-    minutesLeft = Math.floor(fullSecondsLeft / 60);
-    secondsLeft = fullSecondsLeft % 60;
-    suppresslabel.innerHTML = "Time Left: " + minutesLeft + ":" + secondsLeft;
-    
-    console.log(timerA.getTimeLeft() / 1000);
-  } else {
-    suppresslabel.style.display = "none";
-  }
-  
-}
+
 
 
 
@@ -374,9 +383,6 @@ const fastInterval = setInterval(function ( ) {
   const slowInterval = setInterval(function ( ) {
     getRssi();
     getSettings();
-    getSuppressTimeLeft();
-   
-
   }, 2000 ) ;
 
   
@@ -387,6 +393,25 @@ const fastInterval = setInterval(function ( ) {
     nav_marker();
     
   }
+
+  function restCounter(){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    };
+  xhttp.open("GET", "/resetCounter", true);
+  xhttp.send();
+
+  }
+
+  function padCounter(Count){
+  outString = "";
+  if (Count < 10) outString +="0";
+  if (Count < 100) outString +="0";
+  if (Count < 1000) outString +="0";
+  if (Count < 10000) outString +="0";
+  outString += String(Count);
+  return outString;
+}
 
 
   
@@ -401,6 +426,8 @@ function getSettings(){
       alertPercent_1 = settingsJson.alertPercent_1;
       alertPercent_2 = settingsJson.alertPercent_2;
       alarmEnabled = settingsJson.alarmEnabled;
+    
+      showCounter = settingsJson.showCounter;
       dualMode = settingsJson.dualMode;
       pbar = document.getElementById("shotbar_td");
       plabel = document.getElementById("shotLabel")
@@ -411,14 +438,7 @@ function getSettings(){
         pbar.style.display = "none";
         plabel.style.display = "none";
       }
-      
 
-        
-      
-
-     
-
-   
     }
   };
   xhttp.open("GET", "/get_settings", true);
@@ -426,29 +446,6 @@ function getSettings(){
 
 }
 
-
-
- 
-
-//   function getSettings(){
-//     var xhttp = new XMLHttpRequest();
-//      xhttp.onreadystatechange = function() {
-//        if (this.readyState == 4 && this.status == 200) {
-//          settingsArray = this.responseText.split(",");
-//           //  console.log(settingsArray);
-//            rig_name = String(settingsArray[0])
-//            document.getElementById("device-name-label").innerHTML = String(settingsArray[0]);
-//            alertPercent_1 = settingsArray[8];
-//            alertPercent_2 = settingsArray[9];
-//            alarmEnabled = parseInt(settingsArray[12]);
-
-           
-
-//       }
-//      };
-//      xhttp.open("GET", "/get_settings", true);
-//      xhttp.send();
-// }
 
   function stopIntervals(){
     clearInterval(fastInterval);
@@ -458,53 +455,15 @@ function getSettings(){
  
 
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
-function timer(callback, delay) {
-    var id, started, remaining = delay, running
-
-    this.start = function() {
-        running = true
-        started = new Date()
-        id = setTimeout(callback, remaining)
-    }
-
-    this.pause = function() {
-        running = false
-        clearTimeout(id)
-        remaining -= new Date() - started
-    }
-
-    this.getTimeLeft = function() {
-        if (running) {
-            this.pause()
-            this.start()
-        }
-
-        return remaining
-    }
-
-    this.getStateRunning = function() {
-        return running
-    }
-
-    this.start()
-}
 
 
 
 
 
-function relDiff(a, b) {
- return  100 * Math.abs( ( a - b ) / ( (a+b)/2 ) );
-}
+
+
+
+
 
 
 

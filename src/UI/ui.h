@@ -35,6 +35,9 @@ LV_IMG_DECLARE(ui_img_btn_1_inact_png);    // assets/btn_1_inact.png
 LV_IMG_DECLARE(ui_img_btn_1_act_png);    // assets/btn_1_act.png
 LV_IMG_DECLARE(ui_img_alarm_png);    // assets/alarm.png
 
+// FONTS
+LV_FONT_DECLARE(ui_font_mono2);
+
 // UI INIT
 void ui_init(void);
 void ui_destroy(void);

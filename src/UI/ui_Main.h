@@ -50,6 +50,11 @@ extern void ui_event_alarmImage(lv_event_t * e);
 extern lv_obj_t * ui_alarmImage;
 extern void ui_event_alarmImage1(lv_event_t * e);
 extern lv_obj_t * ui_alarmImage1;
+extern lv_obj_t * ui_loadingContainer;
+extern lv_obj_t * ui_Label39;
+extern lv_obj_t * ui_primaryStartup;
+extern lv_obj_t * ui_secondaryStartup;
+extern lv_obj_t * ui_thirdStarup;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

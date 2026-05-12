@@ -27,9 +27,10 @@
 #include <Preferences.h>
 #include <ESPmDNS.h>
 #include <ESP32httpUpdate.h>
-#include "ESP32S3Buzzer.h"
 #include "VL53L1X_ULD.h"
 #include <ArduinoJson.h>
+#include <Button.h>
+
 
 
 
@@ -40,6 +41,8 @@
 VL53L1X_ULD powderSensor;
 VL53L1X_ULD shotSensor;
 
+Button counterSwitch(0);
+
 #define powderSensor_XSHUT 17
 #define shotSensor_I2C_ADDRESS 0x55
 
@@ -49,11 +52,10 @@ JsonDocument doc;
 
 
 // Set the buzzer pin and channel
-const uint8_t buzzerPin = 27;
-const uint8_t buzzerChannel = 0;
+const uint8_t buzzerPin = 16;
 
-// Create an instance of ESP32S3Buzzer
-ESP32S3Buzzer buzzer(buzzerPin, buzzerChannel);
+
+
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -115,6 +117,15 @@ bool isAlarmed = false;
 bool hasi2Device = false;
 bool hasPowderSensor = false;
 bool hasShotSensor = false;
+
+const int numReadings = 10;
+int pReadings[numReadings];      // Array to store readings
+int readPIndex = 0;
+
+int sReadings[numReadings];      // Array to store readings
+int readSIndex = 0;
+
+
 // bool showMM = true;
 // bool showShot = true;
 // bool showCounter = true;
@@ -129,6 +140,32 @@ int x, y, z;
 
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
+
+int avrValue(int channel, int value){
+  int totalv = 0;
+  if (channel == 0){
+     // Read from sensor
+  pReadings[readPIndex] = value;
+  
+  for (int i = 0; i < numReadings; i++)
+    totalv = totalv +  pReadings[i];
+  }
+  int average = totalv / numReadings;
+
+    // Wrap around at end of array
+  if (readPIndex >= numReadings) {
+    readPIndex = 0;
+  }
+
+  return average;
+
+}
+
+String wifiReset(){
+  wm.resetSettings();
+  ESP.restart();
+  return "ok"; 
+}
 
 
 
@@ -200,14 +237,16 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
   }
 }
 
-void playBuzzer(){
-  // Add a tone to the queue
-  uint32_t freq = 1000;
-  uint32_t onDuration = 200;
-  uint32_t offDuration = 200;
-  uint16_t cycles = 5;
-  buzzer.tone(freq, onDuration, offDuration, cycles);
+void buzzer(bool on){
+  if(on == true){
+    digitalWrite(buzzerPin,HIGH);
+  } else {
+    digitalWrite(buzzerPin, LOW);
+  }
+ 
 }
+
+
 
 
 
@@ -250,6 +289,10 @@ void updateDisplayValues(){
   lv_dropdown_set_selected(ui_wifiModeSelect, savedsettings.wifiMode);
 
   lv_slider_set_value(ui_brightnessSlider, savedsettings.brightness, LV_ANIM_OFF);
+  // lv_spinbox_set_range(ui_alertPPercent, 0, 100);
+  lv_spinbox_set_value(ui_alertPPercent, savedsettings.alertPPercent);
+  // lv_spinbox_set_value(ui_alertSPercent, savedsettings.alertSPercent); 
+  
 
 }
 
@@ -274,10 +317,11 @@ void updateShotRTDisplay(){
   if (sValue <= alertSPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
       setUiElementState(ui_alarmImage1, 1);
-      playBuzzer();
+
       
     } else {
-      setUiElementState(ui_alarmImage1, 0);  
+      setUiElementState(ui_alarmImage1, 0);
+
     }
 
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
@@ -305,6 +349,17 @@ void updateShotRTDisplay(){
    
     //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
   }
+   
+}
+
+String padCounter(){
+  String outString = "";
+  if (currentRndCount < 10) outString +="0";
+  if (currentRndCount < 100) outString +="0";
+  if (currentRndCount < 1000) outString +="0";
+  if (currentRndCount < 10000) outString +="0";
+  outString += String(currentRndCount);
+  return outString;
 }
 
 void updatePowderRTDisplay(){
@@ -323,14 +378,14 @@ void updatePowderRTDisplay(){
   String tempStr = String(pValue) + "%"; 
   const char* myStr = tempStr.c_str(); // Get the underlying const char*
   lv_label_set_text(ui_powderValueLabel, myStr);
-  tempStr = String(currentRndCount * 100); 
+  // tempStr = String(currentRndCount); 
+  tempStr = padCounter(); 
   myStr = tempStr.c_str(); // Get the underlying const char*
   lv_label_set_text(ui_roundCounterLabel, myStr);
   
   if (pValue <= alertPPercent){
     if ((savedsettings.alarmEnabled == true) && (isAlarmSilenced == false)){
       setUiElementState(ui_alarmImage, 1); 
-      playBuzzer();
       isAlarmed = true; 
     } else {
       setUiElementState(ui_alarmImage, 0);  
@@ -359,6 +414,8 @@ void updatePowderRTDisplay(){
     setUiTextColor(ui_Powder_label, "norm");
     //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
   }
+  lv_spinbox_set_value(ui_alertPPercent, savedsettings.alertPPercent);
+  lv_spinbox_set_value(ui_alertSPercent, savedsettings.alertSPercent);
 
 }
 
@@ -367,6 +424,7 @@ void updateAlerts(){
   warnPPercent = alertPPercent  * 1.5;
   alertSPercent = savedsettings.alertSPercent;
   warnSPercent = alertSPercent  * 1.5;
+  
 }
 
 void updateRealTimeDisplay(){
@@ -434,10 +492,7 @@ extern "C" {
     Serial.println(lv_dropdown_get_selected(ui_wifiModeSelect));
     savedsettings.wifiMode =  lv_dropdown_get_selected(ui_wifiModeSelect);
     setWifiMode(savedsettings.wifiMode);
-   
-    
-    
-  }
+   }
 
 
   void measurePEmptyLevelCallBack(lv_event_t * e) {
@@ -445,6 +500,20 @@ extern "C" {
     savedsettings.maxPDist = rawPValue;
     updateDataDisplay();
   }
+
+  void alertPPercentCallBack(lv_event_t * e) {
+    int32_t value = lv_spinbox_get_value(ui_alertPPercent);
+    savedsettings.alertPPercent = value;
+    updateDataDisplay();
+  }
+
+  void alertSPercentCallBack(lv_event_t * e) {
+    int32_t value = lv_spinbox_get_value(ui_alertSPercent);
+    savedsettings.alertSPercent = value;
+    updateDataDisplay();
+  }
+
+
 
   void measurePFullLevelCallBack(lv_event_t * e) {
     //set powder max level
@@ -567,6 +636,10 @@ void sensorSetup(){
       Serial.println("Shot Sensor initialized");
       // Set the I2C address of sensor 2 to a different address as the default. 
       shotSensor.SetI2CAddress(shotSensor_I2C_ADDRESS);
+      // Set the distance mode. This can be Short or Long.
+      // Short has better ambient immunity but is only usable up to 1.3m
+      // Long can go as far as 4m but needs a higher timing budget and darker environment
+      //shotSensor.SetDistanceMode(Short);
       shotSensor.StartRanging();
       hasShotSensor = true;
     }
@@ -589,6 +662,10 @@ void sensorSetup(){
   } else {
     Serial.println("Sensor initialized");
     hasPowderSensor = true;
+    // Set the distance mode. This can be Short or Long.
+      // Short has better ambient immunity but is only usable up to 1.3m
+      // Long can go as far as 4m but needs a higher timing budget and darker environment
+    //powderSensor.SetDistanceMode(Short);
     powderSensor.StartRanging();
   }
 
@@ -601,6 +678,7 @@ String getRSSI(){
 String getPercents(){
   doc["pValue"] = pValue;
   doc["sValue"] = sValue;
+  doc["currentCounter"] = currentRndCount;
   doc["isAlarmSilenced"] = isAlarmSilenced;
   doc["isAlarmed"] = isAlarmed;
   doc["alarmDelay"] = alarmDelay;
@@ -625,6 +703,7 @@ String getSettings() {
   doc["maxDist_2"] = savedsettings.maxSDist;
   doc["alertPercent_1"] = savedsettings.alertPPercent;
   doc["alertPercent_2"] = savedsettings.alertSPercent;
+  doc["showCounter"] = savedsettings.showCounter;
   //doc["grainsPerMM"] = savedsettings.grainsPerMM;
   doc["isAlarmSilenced"] = isAlarmSilenced;
   doc["isAlarmed"] = isAlarmed;
@@ -650,6 +729,7 @@ void readPowderSensor(){
   powderSensor.GetDistanceInMm(&distance1);
   //Serial.println("Powder Sensor Distance in mm: " + String(distance1));
   rawPValue = distance1;
+  // rawPValue = avrValue(0,distance1);
   
 
   // After reading the results reset the interrupt to be able to take another measurement
@@ -685,26 +765,61 @@ void init_spiffs(){
  
 }
 
+void configModeCallback (WiFiManager *myWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  // Portal is now active
+
+  if (wm.getConfigPortalActive()) {
+    Serial.println("Portal is active!");
+    setUILabelText(ui_primaryStartup, "Starting Portal" );
+    setUILabelText(ui_secondaryStartup,  "SSID: " + savedsettings.ssid_name);
+    setUILabelText(ui_thirdStarup,   "IP Address: 192.168.4.1");
+    lv_timer_handler(); // Update the UI
+  }
+}
+
 void init_wifi(){
   //start the wifi manager
+  //lv_obj_add_flag(ui_loadingContainer, LV_OBJ_FLAG_HIDDEN);
+  setUILabelText(ui_primaryStartup, "Connecting to WiFi" );
+  lv_timer_handler(); // Update the UI
+  wm.setAPCallback(configModeCallback);
+
   wm.setTitle(project_name);
   wm.setCustomHeadElement("<style>h1:first-of-type { color: rgba(0,0,0,0);} h3:first-of-type {color: red;} </style>");
   wm.setHostname(nospaces(project_name));
   if (!wm.autoConnect(savedsettings.ssid_name.c_str(), savedsettings.ssid_password.c_str())){ // password protected ap) {
-     
+    
   } else {
+  
     Serial.println("Wifi Connected");
     Serial.println("IP: " + WiFi.localIP().toString());
     setUILabelText(ui_ipAddressLabel, "IP Address: " + WiFi.localIP().toString());
+
+    setUILabelText(ui_secondaryStartup,  "Connected !");
+    setUILabelText(ui_thirdStarup,  "IP Address: " + WiFi.localIP().toString());
+    lv_timer_handler(); // Update the UI
+
+
+
   }
+
+  delay(6000);
 
 }
 
 void init_AP(){
+  setUILabelText(ui_primaryStartup, "Starting AP Mode" );
+  setUILabelText(ui_secondaryStartup,  "SSID: " + savedsettings.ssid_name);
+  setUILabelText(ui_thirdStarup, " IP Address: 192.168.4.1");
+  lv_timer_handler(); // Update the UI
   WiFi.mode(WIFI_AP);
   WiFi.softAP(savedsettings.ssid_name,savedsettings.ssid_password);
   setUILabelText(ui_ipAddressLabel, "IP Address: 192.168.4.1" );
+  delay(6000);
 }
+
 
 
 
@@ -717,9 +832,9 @@ void init_pages(){
     request->send(SPIFFS, "/common.js");
   });
 
-  //   server.on("/menu.png", HTTP_GET, [](AsyncWebServerRequest *request){
-  //   request->send(SPIFFS, "/menu.png", "menu/png");
-  // });
+  server.on("/wifi-reset", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", wifiReset().c_str());
+  });
 
   server.on("/epwc.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/epwc.css", "text/css");
@@ -781,6 +896,10 @@ void init_pages(){
     request->send(200, "text/plain", "OK");
   });
 
+  server.on("/resetCounter", HTTP_GET, [](AsyncWebServerRequest *request){
+    reset_counter();
+    request->send(200, "text/plain", "OK");
+  });
   
 
   server.on("/set_settings", HTTP_GET, [] (AsyncWebServerRequest *request) {
@@ -823,6 +942,7 @@ void init_pages(){
 
      if (request->hasParam("alarmEnabled")) {
       inputMessage = request->getParam("alarmEnabled")->value();
+      Serial.println(inputMessage);
       setAlarmEnabled(inputMessage.toInt());
     }
     request->redirect("/index.html");
@@ -832,21 +952,32 @@ void init_pages(){
   });
 }
 
+static void lv_tick_task(void *arg) {
+    (void) arg;
+    while(1) {
+        lv_tick_inc(10); // Inform LVGL that 10ms have passed
+        vTaskDelay(pdMS_TO_TICKS(10)); // Sleep for 10ms
+    }
+}
+
 
 
 void setup() {
-  // Initialize the buzzer
-  //buzzer.begin();
+
   // String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
     // Turn off sensor 1 by pulling the XSHUT pin LOW
   pinMode(powderSensor_XSHUT, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(19, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+ 
 
   digitalWrite(powderSensor_XSHUT, HIGH);
   digitalWrite(4, LOW);
-  digitalWrite(16, LOW);
+  digitalWrite(buzzerPin, LOW);
+  counterSwitch.begin();
 
 
 
@@ -890,6 +1021,10 @@ void setup() {
   lv_indev_set_read_cb(indev, touchscreen_read);
   ui_init();
 
+  xTaskCreate(lv_tick_task, "lv_tick", 2048, NULL, 10, NULL);
+
+
+
   setUiElementState(ui_resetCounterPanel, 0);
   setUiElementState(ui_alarmImage, 0);
   setUiElementState(ui_alarmImage1, 0);
@@ -903,14 +1038,30 @@ void setup() {
   
   setUILabelText(ui_ipAddressLabel, "IP Address: None");
 
+
+
+ 
+
+
+  
+
+
+
+
+
+ 
+
   if (savedsettings.wifiMode == 1){
     Serial.println("Connecting...");
     init_wifi();
+        // Force update here
+  
     if (!MDNS.begin("SmartLoader")) {
       Serial.println("Error setting up MDNS responder!");
     } else {
       Serial.println("mDNS responder started");
     }
+    
     server.begin();
     Serial.println("TCP server started");
     MDNS.addService("http", "tcp", 80);
@@ -920,17 +1071,27 @@ void setup() {
       // create an access point at 192.168.4.1
     Serial.println("Creating Access Point...");
     init_AP();
-    //delay(1000);
+    if (!MDNS.begin("SmartLoader")) {
+      Serial.println("Error setting up MDNS responder!");
+    } else {
+      Serial.println("mDNS responder started");
+    }
     server.begin();
     Serial.println("TCP server started");
+    MDNS.addService("http", "tcp", 80);
     init_pages();
     Serial.println("IP: " + WiFi.softAPIP().toString());
     //delay(3000);
+   } else if(savedsettings.wifiMode == 0){
+    setUILabelText(ui_primaryStartup, "Isoloated Mode" );
+    setUILabelText(ui_secondaryStartup,  "WiFi Disabled");
+    setUILabelText(ui_thirdStarup,   "");
+    lv_timer_handler(); // Update the UI
+    delay(3000);
    }
 
-
-
-
+ 
+  lv_obj_add_flag(ui_loadingContainer, LV_OBJ_FLAG_HIDDEN);
 
 
 }
@@ -940,20 +1101,40 @@ void setup() {
 
 void sudoCounter(){
   currentRndCount +=1;
-  if (currentRndCount * 100 > 99999) currentRndCount = 0;
+  //currentRndCount =35;
+  if (currentRndCount > 9999) currentRndCount = 0;
 
 }
 
 
 
+void checkButton(){
+  if (counterSwitch.released()){
+		Serial.println("counter released");
+    currentRndCount +=1;
+  }
+}
+
+void checkBuzzer(){
+  if ((isAlarmed == true) && (isAlarmSilenced == false)){
+    buzzer(true);
+  } else {
+    buzzer(false);
+  }
+}
+
 void loop() {
-    // Call the update method to process tones in the queue
-  buzzer.update();
+
+  checkBuzzer();
   lv_task_handler();  // let the GUI do its work
-  lv_tick_inc(5);     // tell LVGL how much time has passed
-  delay(5);           // let this time pass
+  // lv_tick_inc(5);     // tell LVGL how much time has passed
+  // delay(5);           // let this time pass
   lv_timer_handler(); // Update the UI
 
+  if (counterSwitch.pressed()){
+		Serial.println("counter pressed");
+    currentRndCount +=1;
+  }
   // static uint32_t last_time = 0;
   //   if (millis() - last_time > 500) {
   //       last_time = millis();
@@ -970,7 +1151,7 @@ void loop() {
         lastupdate = millis();
         getSensorValues();
         updateRealTimeDisplay();
-        sudoCounter();
+        //sudoCounter();
         if (hasPowderSensor == true){
            readPowderSensor();
         }
