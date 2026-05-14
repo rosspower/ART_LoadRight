@@ -15,6 +15,7 @@ extern void ui_Main_screen_init(void);
 extern void ui_Main_screen_destroy(void);
 extern lv_obj_t * ui_Main;
 extern lv_obj_t * ui_BackGround;
+extern lv_obj_t * ui_StandardBackground;
 extern lv_obj_t * ui_powderIndicator;
 extern void ui_event_powderSlider(lv_event_t * e);
 extern lv_obj_t * ui_powderSlider;

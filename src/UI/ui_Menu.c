@@ -35,6 +35,8 @@ lv_obj_t * ui_Label15 = NULL;
 lv_obj_t * ui_showShotSwitch = NULL;
 lv_obj_t * ui_ClearSettingsButton = NULL;
 lv_obj_t * ui_Label16 = NULL;
+lv_obj_t * ui_CalibrateSensorsButton = NULL;
+lv_obj_t * ui_Label41 = NULL;
 // event funtions
 void ui_event_Return_Button(lv_event_t * e)
 {
@@ -132,6 +134,15 @@ void ui_event_ClearSettingsButton(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         ClearAllSettingsCallback(e);
+    }
+}
+
+void ui_event_CalibrateSensorsButton(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        calSensorCallBack(e);
     }
 }
 
@@ -441,6 +452,26 @@ void ui_Menu_screen_init(void)
     lv_label_set_text(ui_Label16, "Clear All Settings");
     lv_obj_set_style_text_font(ui_Label16, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_CalibrateSensorsButton = lv_button_create(ui_Panel3);
+    lv_obj_set_height(ui_CalibrateSensorsButton, 30);
+    lv_obj_set_width(ui_CalibrateSensorsButton, lv_pct(98));
+    lv_obj_set_align(ui_CalibrateSensorsButton, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_CalibrateSensorsButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_remove_flag(ui_CalibrateSensorsButton, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_text_color(ui_CalibrateSensorsButton, lv_color_hex(0x100E0E), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_CalibrateSensorsButton, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_CalibrateSensorsButton, lv_color_hex(0x0E3556), LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(ui_CalibrateSensorsButton, 255, LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_text_color(ui_CalibrateSensorsButton, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_text_opa(ui_CalibrateSensorsButton, 255, LV_PART_MAIN | LV_STATE_PRESSED);
+
+    ui_Label41 = lv_label_create(ui_CalibrateSensorsButton);
+    lv_obj_set_width(ui_Label41, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label41, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Label41, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label41, "Calibrate Sensors (5mm)");
+    lv_obj_set_style_text_font(ui_Label41, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_Label2, ui_event_Label2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Return_Button, ui_event_Return_Button, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_wifiModeSelect, ui_event_wifiModeSelect, LV_EVENT_ALL, NULL);
@@ -452,6 +483,7 @@ void ui_Menu_screen_init(void)
     lv_obj_add_event_cb(ui_showCounterSwitch, ui_event_showCounterSwitch, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_showShotSwitch, ui_event_showShotSwitch, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_ClearSettingsButton, ui_event_ClearSettingsButton, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_CalibrateSensorsButton, ui_event_CalibrateSensorsButton, LV_EVENT_ALL, NULL);
 
 }
 
@@ -490,5 +522,7 @@ void ui_Menu_screen_destroy(void)
     ui_showShotSwitch = NULL;
     ui_ClearSettingsButton = NULL;
     ui_Label16 = NULL;
+    ui_CalibrateSensorsButton = NULL;
+    ui_Label41 = NULL;
 
 }

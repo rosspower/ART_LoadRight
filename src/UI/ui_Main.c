@@ -7,6 +7,7 @@
 
 lv_obj_t * ui_Main = NULL;
 lv_obj_t * ui_BackGround = NULL;
+lv_obj_t * ui_StandardBackground = NULL;
 lv_obj_t * ui_powderIndicator = NULL;
 lv_obj_t * ui_powderSlider = NULL;
 lv_obj_t * ui_Powder_label = NULL;
@@ -148,14 +149,30 @@ void ui_Main_screen_init(void)
     lv_obj_remove_flag(ui_BackGround, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_BackGround, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_BackGround, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_color(ui_BackGround, lv_color_hex(0x8B0909), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_main_stop(ui_BackGround, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_stop(ui_BackGround, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_grad_dir(ui_BackGround, LV_GRAD_DIR_VER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_BackGround, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_BackGround, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_powderIndicator = lv_obj_create(ui_BackGround);
+    ui_StandardBackground = lv_obj_create(ui_Main);
+    lv_obj_set_width(ui_StandardBackground, 243);
+    lv_obj_set_height(ui_StandardBackground, 347);
+    lv_obj_set_align(ui_StandardBackground, LV_ALIGN_CENTER);
+    lv_obj_set_flex_flow(ui_StandardBackground, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui_StandardBackground, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_StandardBackground, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_StandardBackground, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_StandardBackground, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_StandardBackground, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_StandardBackground, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_powderIndicator = lv_obj_create(ui_Main);
     lv_obj_set_width(ui_powderIndicator, lv_pct(50));
     lv_obj_set_height(ui_powderIndicator, lv_pct(100));
     lv_obj_set_y(ui_powderIndicator, 0);
-    lv_obj_set_x(ui_powderIndicator, lv_pct(-30));
+    lv_obj_set_x(ui_powderIndicator, lv_pct(-25));
     lv_obj_set_align(ui_powderIndicator, LV_ALIGN_CENTER);
     lv_obj_remove_flag(ui_powderIndicator, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_powderIndicator, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -210,7 +227,7 @@ void ui_Main_screen_init(void)
     ui_powderValueLabel = lv_label_create(ui_powderIndicator);
     lv_obj_set_width(ui_powderValueLabel, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_powderValueLabel, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_powderValueLabel, -10);
+    lv_obj_set_x(ui_powderValueLabel, 5);
     lv_obj_set_y(ui_powderValueLabel, lv_pct(-15));
     lv_obj_set_align(ui_powderValueLabel, LV_ALIGN_LEFT_MID);
     lv_label_set_text(ui_powderValueLabel, "100%");
@@ -227,11 +244,11 @@ void ui_Main_screen_init(void)
     lv_obj_set_style_text_align(ui_powderdistValueLabel, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_powderdistValueLabel, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_ShotIndicator = lv_obj_create(ui_BackGround);
+    ui_ShotIndicator = lv_obj_create(ui_Main);
     lv_obj_set_width(ui_ShotIndicator, lv_pct(50));
     lv_obj_set_height(ui_ShotIndicator, lv_pct(100));
     lv_obj_set_y(ui_ShotIndicator, 0);
-    lv_obj_set_x(ui_ShotIndicator, lv_pct(30));
+    lv_obj_set_x(ui_ShotIndicator, lv_pct(25));
     lv_obj_set_align(ui_ShotIndicator, LV_ALIGN_CENTER);
     lv_obj_remove_flag(ui_ShotIndicator, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_color(ui_ShotIndicator, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -281,7 +298,7 @@ void ui_Main_screen_init(void)
     ui_ShotValueLabel = lv_label_create(ui_ShotIndicator);
     lv_obj_set_width(ui_ShotValueLabel, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_ShotValueLabel, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_ShotValueLabel, 10);
+    lv_obj_set_x(ui_ShotValueLabel, 0);
     lv_obj_set_y(ui_ShotValueLabel, lv_pct(-15));
     lv_obj_set_align(ui_ShotValueLabel, LV_ALIGN_RIGHT_MID);
     lv_label_set_text(ui_ShotValueLabel, "100%");
@@ -586,6 +603,7 @@ void ui_Main_screen_destroy(void)
     // NULL screen variables
     ui_Main = NULL;
     ui_BackGround = NULL;
+    ui_StandardBackground = NULL;
     ui_powderIndicator = NULL;
     ui_powderSlider = NULL;
     ui_Powder_label = NULL;

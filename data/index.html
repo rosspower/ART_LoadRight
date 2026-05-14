@@ -298,11 +298,20 @@ function updateBars(){
       container = document.getElementById("mainFieldSet");
       valuesJson = JSON.parse(this.responseText);
       const btn = document.getElementById("silenceAlarmButton");
-      if (valuesJson.isAlarmed == true){
-        document.getElementById("mainFieldSet").style = 'background: linear-gradient(131deg,rgba(255, 0, 0, 1) 0%, rgba(102, 21, 29, 1) 100%);'      
+      let p1 = valuesJson.pValue;
+      let p2 = valuesJson.sValue;
+
+      if (((p1 < alertPercent_1)) || ((p2 <= alertPercent_2) && (dualMode == true))){
+         document.getElementById("mainFieldSet").style = 'background: linear-gradient(131deg,rgba(255, 0, 0, 1) 0%, rgba(102, 21, 29, 1) 100%);'      
       } else {
         document.getElementById("mainFieldSet").style = "";
       }
+
+      // if (valuesJson.isAlarmed == true){
+      //   document.getElementById("mainFieldSet").style = 'background: linear-gradient(131deg,rgba(255, 0, 0, 1) 0%, rgba(102, 21, 29, 1) 100%);'      
+      // } else {
+      //   document.getElementById("mainFieldSet").style = "";
+      // }
       if ((alarmEnabled == true) && (valuesJson.isAlarmed == true) && (valuesJson.isAlarmSilenced == false)){
         btn.hidden = false;
       } else {
@@ -317,10 +326,10 @@ function updateBars(){
         document.getElementById("CounterValue").hidden = true;
       }
         
-          let p1 = valuesJson.pValue;
+          
                    
           if (p1 < 0) p1 = 0;
-          if (p1 < alertPercent_1) {
+          if (p1 <= alertPercent_1) {
             updateProgressBar(p1, 'powderBar', 'red'); // Sets progress to 75%
             const label = document.getElementById("powderLabel");
             label.style.color = "red";
@@ -342,9 +351,9 @@ function updateBars(){
            }
 
           if(dualMode == true) {
-            let p2 = valuesJson.sValue;
+            
             if (p2 < 0) p2 = 0;
-            if (p2 < alertPercent_2) {
+            if (p2 <= alertPercent_2) {
               updateProgressBar(p2, 'shotBar', 'red'); // Sets progress to 75%
               const label = document.getElementById("shotLabel");
               label.style.color = "red";

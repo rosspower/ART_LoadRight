@@ -126,10 +126,6 @@ int sReadings[numReadings];      // Array to store readings
 int readSIndex = 0;
 
 
-// bool showMM = true;
-// bool showShot = true;
-// bool showCounter = true;
-
 
 
 
@@ -169,6 +165,16 @@ String wifiReset(){
 
 
 
+
+
+
+
+
+
+
+
+
+
 void setSwitch(lv_obj_t * obj, bool state){
   if (state == 1){
     lv_obj_add_state(obj, LV_STATE_CHECKED);
@@ -195,11 +201,15 @@ void getSensorValues(){
     if (pValue < 0) pValue = 0;
     if (pValue > 100) pValue = 100;
   }
+
+   if (hasShotSensor == true){
+     sValue = map(rawSValue, savedsettings.minSDist, savedsettings.maxSDist, 100, 0 );
+    if (sValue < 0) sValue = 0;
+    if (sValue > 100) sValue = 100;
+  }
  
 
-  //read raw svalue from sensor
-  rawSValue = random(savedsettings.minSDist, savedsettings.maxSDist);
-  sValue = map(rawSValue, savedsettings.minSDist, savedsettings.maxSDist, 100, 0 );
+
 
 }
 
@@ -257,6 +267,9 @@ void setUiTextColor(lv_obj_t * obj, String inmode){
   } else if (inmode == "warn"){
     setColor = 0xFF4D01;
   }
+  else if (inmode == "black"){
+    setColor = 0x000000;
+  }
   lv_obj_set_style_text_color(obj, lv_color_hex(setColor), LV_PART_MAIN);
 }
 
@@ -272,7 +285,14 @@ void updateDisplayValues(){
   //showShot
   setSwitch(ui_showShotSwitch, savedsettings.showShot);
   setUiElementState(ui_ShotIndicator, savedsettings.showShot);
-  if (hasShotSensor == false) setUiElementState(ui_ShotIndicator, 0);
+  if (hasShotSensor == false){
+    // Sets the object's X position to 25% of its parent's width
+    lv_obj_set_x(ui_powderIndicator, lv_pct(0));
+    setUiElementState(ui_ShotIndicator, 0);
+  } else {
+    lv_obj_set_x(ui_powderIndicator, lv_pct(-25));
+  }
+
 
   //showCounter
   setSwitch(ui_showCounterSwitch, savedsettings.showCounter);
@@ -325,10 +345,9 @@ void updateShotRTDisplay(){
     }
 
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
-    setUiTextColor(ui_ShotValueLabel, "alert");
+    //setUiTextColor(ui_ShotValueLabel, "black");
     setUiTextColor(ui_Shot_Label, "alert");
 
-    // lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF0000), LV_PART_MAIN);
   } else if(sValue <= warnSPercent){
     if (savedsettings.alarmEnabled == true){
       setUiElementState(ui_alarmImage1, 0);
@@ -337,7 +356,7 @@ void updateShotRTDisplay(){
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0xFF5C00), LV_PART_INDICATOR);
     setUiTextColor(ui_ShotValueLabel, "warn");
     setUiTextColor(ui_Shot_Label, "warn");
-    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF5C00), LV_PART_MAIN);
+
   }
   else {
     if (savedsettings.alarmEnabled == true){
@@ -346,8 +365,7 @@ void updateShotRTDisplay(){
     lv_obj_set_style_bg_color(ui_shotSlider, lv_color_hex(0x127612), LV_PART_INDICATOR);
     setUiTextColor(ui_ShotValueLabel, "norm");
     setUiTextColor(ui_Shot_Label, "norm");
-   
-    //lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xffffff), LV_PART_MAIN);
+
   }
    
 }
@@ -392,7 +410,7 @@ void updatePowderRTDisplay(){
     }
 
     lv_obj_set_style_bg_color(ui_powderSlider, lv_color_hex(0xFF0000), LV_PART_INDICATOR);
-    setUiTextColor(ui_powderValueLabel, "alert");
+    //setUiTextColor(ui_powderValueLabel, "black");
     setUiTextColor(ui_Powder_label, "alert");
 
     // lv_obj_set_style_text_color(ui_powderValueLabel, lv_color_hex(0xFF0000), LV_PART_MAIN);
@@ -428,9 +446,14 @@ void updateAlerts(){
 }
 
 void updateRealTimeDisplay(){
+  if ((pValue <= alertPPercent) || ((sValue <= alertSPercent) && (hasShotSensor == true))){
+    setUiElementState(ui_StandardBackground,0);
+  } else {
+    setUiElementState(ui_StandardBackground,1);
+  }
   if((pValue <= alertPPercent) && (savedsettings.alarmEnabled == true)){
     isAlarmed = true;
-  } else if ((sValue <= alertSPercent) && (hasShotSensor == true)){
+  } else if ((sValue <= alertSPercent) && (hasShotSensor == true) && (savedsettings.alarmEnabled == true)){
     isAlarmed = true;
   } else {
     isAlarmed = false;
@@ -488,6 +511,44 @@ void setWifiMode(int mode){
 
 extern "C" {
 
+  
+
+  void calSensorCallBack(lv_event_t * e) {
+    int16_t foundOffset;
+    if (hasPowderSensor == true){
+      powderSensor.CalibrateOffset(5, &foundOffset);
+      Serial.println("Powder Sensor Calibrated offset: " + String(foundOffset));
+      Serial.println("Remember this value for this sensor with the selected ROI and set it in every sketch to use");
+      savedsettings.calPDist =  foundOffset;
+    }
+
+
+    if(hasShotSensor == true){
+      shotSensor.CalibrateOffset(5, &foundOffset);
+      Serial.println("Shot Sensor Calibrated offset: " + String(foundOffset));
+      Serial.println("Remember this value for this sensor with the selected ROI and set it in every sketch to use");
+      savedsettings.calSDist = foundOffset;
+    }
+
+
+
+    updateDataDisplay();
+    ESP.restart();
+    
+    
+  }
+
+  // void calPSensorCallBack(lv_event_t * e) {
+  //   int16_t foundOffset;
+  //   powderSensor.CalibrateOffset(5, &foundOffset);
+  //   Serial.println("Powder Sensor Calibrated offset: " + String(foundOffset));
+  //   Serial.println("Remember this value for this sensor with the selected ROI and set it in every sketch to use");
+  //   savedsettings.calPDist =  foundOffset;
+  //   updateDataDisplay();
+  //   ESP.restart();
+    
+  // }
+
    void wifiModeSelectCallBack(lv_event_t * e) {
     Serial.println(lv_dropdown_get_selected(ui_wifiModeSelect));
     savedsettings.wifiMode =  lv_dropdown_get_selected(ui_wifiModeSelect);
@@ -523,13 +584,13 @@ extern "C" {
 
   void measureSEmptyLevelCallBack(lv_event_t * e) {
     //set powder max level
-    savedsettings.maxSDist = 138;
+    savedsettings.maxSDist = rawSValue;
     updateDataDisplay();
   }
 
   void measureSFullLevelCallBack(lv_event_t * e) {
     //set powder max level
-    savedsettings.minSDist = 7;
+    savedsettings.minSDist = rawSValue;
     updateDataDisplay();
   }
 
@@ -624,6 +685,7 @@ boolean i2cScanner(){
 }
 void sensorSetup(){
   digitalWrite(powderSensor_XSHUT, LOW);
+  
 
   if (i2cScanner() == true){
     // Initialize sensor 2
@@ -639,7 +701,15 @@ void sensorSetup(){
       // Set the distance mode. This can be Short or Long.
       // Short has better ambient immunity but is only usable up to 1.3m
       // Long can go as far as 4m but needs a higher timing budget and darker environment
-      //shotSensor.SetDistanceMode(Short);
+      shotSensor.SetDistanceMode(Short);
+      // savedsettings.calSDist = -13;
+      // storePreferences();
+      // getPreferences();
+      
+      shotSensor.SetOffsetInMm(savedsettings.calSDist);
+      
+      Serial.println("Shot Sensor Calibrated offset: " + String(savedsettings.calSDist));
+      // Serial.println("Remember this value for this sensor with the selected ROI and set it in every sketch to use");
       shotSensor.StartRanging();
       hasShotSensor = true;
     }
@@ -662,10 +732,15 @@ void sensorSetup(){
   } else {
     Serial.println("Sensor initialized");
     hasPowderSensor = true;
+
+
     // Set the distance mode. This can be Short or Long.
       // Short has better ambient immunity but is only usable up to 1.3m
       // Long can go as far as 4m but needs a higher timing budget and darker environment
-    //powderSensor.SetDistanceMode(Short);
+    powderSensor.SetDistanceMode(Short);
+    int16_t foundOffset = savedsettings.calPDist;
+    powderSensor.SetOffsetInMm(foundOffset);
+    Serial.println("Powder Sensor Calibrated offset: " + String(savedsettings.calPDist));
     powderSensor.StartRanging();
   }
 
@@ -737,7 +812,7 @@ void readPowderSensor(){
  
 }
 
-void readshotSensor(){
+void readShotSensor(){
   // Checking if data is available. This can also be done through the hardware interrupt
   uint8_t dataReady_shotSensor = false;
   while(!dataReady_shotSensor) {
@@ -748,7 +823,8 @@ void readshotSensor(){
   // Get the results
   uint16_t distance2;
   shotSensor.GetDistanceInMm(&distance2);
-  Serial.println("Shot Sensor Distance in mm: " + String(distance2));
+  // Serial.println("Shot Sensor Distance in mm: " + String(distance2));
+  rawSValue = distance2;
 
   // After reading the results reset the interrupt to be able to take another measurement
   shotSensor.ClearInterrupt();
@@ -964,6 +1040,9 @@ static void lv_tick_task(void *arg) {
 
 void setup() {
 
+  
+
+
   // String LVGL_Arduino = String("LVGL Library Version: ") + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
   Serial.begin(115200);
     // Turn off sensor 1 by pulling the XSHUT pin LOW
@@ -980,7 +1059,12 @@ void setup() {
   counterSwitch.begin();
 
 
-
+  // delay(4000);
+  initPreferences();
+  getPreferences();
+ 
+  updateAlerts();
+  init_spiffs();
 
   // Initialize I2C with specific pins
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -990,11 +1074,11 @@ void setup() {
  
   
   
-  // delay(4000);
-  initPreferences();
-  getPreferences();
-  updateAlerts();
-  init_spiffs();
+
+
+
+
+  
 
     // Start LVGL
   lv_init();
@@ -1090,7 +1174,6 @@ void setup() {
     delay(3000);
    }
 
- 
   lv_obj_add_flag(ui_loadingContainer, LV_OBJ_FLAG_HIDDEN);
 
 
@@ -1116,10 +1199,13 @@ void checkButton(){
 }
 
 void checkBuzzer(){
+  
   if ((isAlarmed == true) && (isAlarmSilenced == false)){
     buzzer(true);
+    
   } else {
     buzzer(false);
+    
   }
 }
 
@@ -1149,12 +1235,16 @@ void loop() {
 
     if (millis() - lastupdate > update_interval) {
         lastupdate = millis();
-        getSensorValues();
-        updateRealTimeDisplay();
-        //sudoCounter();
+       
+       
         if (hasPowderSensor == true){
            readPowderSensor();
         }
+        if (hasShotSensor == true){
+          readShotSensor();
+        }
+         getSensorValues();
+        updateRealTimeDisplay();
        
  
     }

@@ -86,3 +86,19 @@ def alertPPercentCallBack(event_struct):
 def alertSPercentCallBack(event_struct):
     return
 
+
+def calPsensorCallBack(event_struct):
+    return
+
+
+def calSSensorCallBack(event_struct):
+    return
+
+
+def calPSensorCallBack(event_struct):
+    return
+
+
+def calSensorCallBack(event_struct):
+    return
+

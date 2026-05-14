@@ -54,6 +54,9 @@ extern lv_obj_t * ui_showShotSwitch;
 extern void ui_event_ClearSettingsButton(lv_event_t * e);
 extern lv_obj_t * ui_ClearSettingsButton;
 extern lv_obj_t * ui_Label16;
+extern void ui_event_CalibrateSensorsButton(lv_event_t * e);
+extern lv_obj_t * ui_CalibrateSensorsButton;
+extern lv_obj_t * ui_Label41;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

@@ -31,7 +31,6 @@ void initPreferences(){
         prefs.putString("device_name", project_name);
         prefs.putString("device_desc", project_name);
         prefs.putString("mdns_name", nospaces(project_name));
-        prefs.putInt("can_speed", 1);
         prefs.putString("ssid_name", project_name);
         prefs.putString("ssid_pass", project_name);
         prefs.putInt("wifiMode", 2); // 0:none, 1:connected, 2:standalone
@@ -42,6 +41,8 @@ void initPreferences(){
         prefs.putString("mdns_name", "SmartLoader");
         prefs.putBool("alarmEnabled", true);
 
+        prefs.putInt("calPDist", 0);
+        prefs.putInt("calSDist", 0);
         prefs.putInt("minPDist", 20);
         prefs.putInt("maxPDist", 250);
         prefs.putInt("minSDist", 20);
@@ -73,6 +74,10 @@ void storePreferences(){
     prefs.putString("ssid_pass", savedsettings.ssid_password);
     prefs.putInt("wifiMode", savedsettings.wifiMode);
     prefs.putBool("alarmEnabled", savedsettings.alarmEnabled);
+
+    prefs.putInt("calPDist", savedsettings.calPDist);
+    prefs.putInt("calSDist", savedsettings.calSDist);
+  
     
     prefs.putInt("minPDist", savedsettings.minPDist);
     prefs.putInt("maxPDist", savedsettings.maxPDist);
@@ -102,6 +107,9 @@ void getPreferences(){
     savedsettings.ssid_password = prefs.getString("ssid_pass", project_name);
     savedsettings.wifiMode = prefs.getInt("wifiMode", 0);
     savedsettings.alarmEnabled = prefs.getBool("alarmEnabled", true);
+
+    savedsettings.calPDist = prefs.getInt("calPDist", 0);
+    savedsettings.calSDist = prefs.getInt("calSDist", 0);
     
     savedsettings.minPDist = prefs.getInt("minPDist", 5);
     savedsettings.maxPDist = prefs.getInt("maxPDist", 100);
